@@ -208,8 +208,12 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
   </div>
 
   <button class="bigbtn" id="start">Kezdés</button>
-  <button class="bigbtn ghost" id="installbtn" style="display:none;margin-top:10px">⬇︎ Telepítés a kezdőképernyőre</button>
-  <p class="hint" id="iostip" style="display:none">Telepítés iPhone-on: Safariban a <b>Megosztás</b> ikon → <b>Hozzáadás a főképernyőhöz</b>. Utána saját ikonnal, böngészőkeret nélkül, net nélkül is indul.</p>
+  <div class="panel" id="instpanel" style="margin-top:12px">
+    <h2>Telepítés a kezdőképernyőre</h2>
+    <div id="instbody" style="font-size:13.5px;line-height:1.5"></div>
+    <button class="bigbtn" id="installbtn" style="display:none;margin-top:10px">⬇︎ Telepítés most</button>
+    <p class="hint" id="diag" style="margin-top:10px"></p>
+  </div>
 
   <div class="panel" style="margin-top:12px">
     <h2>Jelvények <span id="badgecount" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
@@ -738,27 +742,62 @@ document.getElementById("retryBad").addEventListener("click", ()=>{
 });
 
 /* ---------- PWA ---------- */
-if("serviceWorker" in navigator && location.protocol.startsWith("http")){
-  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); });
+let swOK = false, promptEvt = null;
+if("serviceWorker" in navigator && location.protocol === "https:"){
+  navigator.serviceWorker.register("./sw.js")
+    .then(()=>{ swOK = true; diag(); })
+    .catch(e=>{ swOK = false; diag("SW hiba: " + e.message); });
 }
-let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt", e=>{
-  e.preventDefault(); deferredPrompt = e;
+  promptEvt = e;                      // Chrome saját ajánlatát NEM tiltjuk le
   const b = document.getElementById("installbtn");
-  if(b){ b.style.display = "block"; }
+  if(b) b.style.display = "block";
+  diag();
 });
+window.addEventListener("appinstalled", ()=>{ diag("Telepítve ✅"); });
+
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+}
+function diag(extra){
+  const d = document.getElementById("diag");
+  if(!d) return;
+  const ua = navigator.userAgent;
+  const bits = [
+    (location.protocol === "https:" ? "✓" : "✗") + " https",
+    (swOK ? "✓" : "…") + " service worker",
+    (promptEvt ? "✓ telepíthető" : "… telepítési ajánlat"),
+    (isStandalone() ? "✓ appként fut" : "böngészőben fut")
+  ];
+  d.textContent = bits.join(" · ") + (extra ? " · " + extra : "");
+}
 document.addEventListener("DOMContentLoaded", ()=>{
+  const ua = navigator.userAgent;
+  const ios = /iphone|ipad|ipod/i.test(ua);
+  const iosChrome = ios && /crios|fxios|edgios/i.test(ua);
+  const android = /android/i.test(ua);
+  const body = document.getElementById("instbody");
+  const panel = document.getElementById("instpanel");
+  if(isStandalone()){ if(panel) panel.style.display = "none"; return; }
+  let txt;
+  if(iosChrome){
+    txt = "<b>iPhone-on ez csak Safariból megy.</b> Másold át ezt a címet Safariba, ott koppints az alsó sorban a <b>Megosztás</b> ikonra (négyzet felfelé nyíllal), görgess le, és válaszd a <b>Hozzáadás a főképernyőhöz</b> pontot.";
+  } else if(ios){
+    txt = "Koppints az alsó sorban a <b>Megosztás</b> ikonra (négyzet felfelé nyíllal) → görgess le → <b>Hozzáadás a főképernyőhöz</b> → <b>Hozzáadás</b>.";
+  } else if(android){
+    txt = "Chrome menü (<b>⋮</b> jobb felül) → <b>Alkalmazás telepítése</b> vagy <b>Hozzáadás a kezdőképernyőhöz</b> → <b>Telepítés</b>. Ha a menüben csak „parancsikon” szerepel, töltsd újra az oldalt egyszer, és próbáld megint.";
+  } else {
+    txt = "Asztali Chrome-ban a címsor jobb szélén megjelenik egy <b>telepítés ikon</b> (monitor nyíllal), vagy a <b>⋮</b> menü → <b>Átküldés, mentés és megosztás</b> → <b>Oldal telepítése alkalmazásként</b>.";
+  }
+  body.innerHTML = txt;
+  diag();
   const b = document.getElementById("installbtn");
-  if(!b) return;
   b.addEventListener("click", async ()=>{
-    if(!deferredPrompt) return;
-    deferredPrompt.prompt(); await deferredPrompt.userChoice;
-    deferredPrompt = null; b.style.display = "none";
+    if(!promptEvt){ diag("a böngésző most nem ajánlja fel – kövesd a fenti lépéseket"); return; }
+    try{ promptEvt.prompt(); await promptEvt.userChoice; promptEvt = null; b.style.display = "none"; }
+    catch(e){ diag("prompt hiba: " + e.message); }
   });
-  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
-  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const tip = document.getElementById("iostip");
-  if(tip && ios && !standalone) tip.style.display = "block";
+  setTimeout(diag, 2500);
 });
 </script>
 </body>
