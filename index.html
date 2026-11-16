@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1720">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sejtbio">
+<meta name="description" content="Sejt molekuláris biológiája és genetikája I – 417 gyakorlókérdés indoklással, offline.">
+<title>Sejtbiológia gyakorló – 417 kérdés</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --fg:#161b22; --muted:#5b6672; --line:#e3e7ec;
+  --accent:#2563eb; --accent-soft:#e8eefc;
+  --ok:#128a4b; --ok-bg:#e4f6ec; --bad:#c62f2f; --bad-bg:#fdeaea;
+  --warn:#9a6700; --warn-bg:#fff6dd; --gold:#d98a00;
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1720; --card:#17202b; --fg:#e8edf3; --muted:#93a1b1; --line:#26313e;
+    --accent:#5b9bff; --accent-soft:#1b2b45;
+    --ok:#4ade80; --ok-bg:#12331f; --bad:#ff8080; --bad-bg:#3a1b1b;
+    --warn:#f5c451; --warn-bg:#3a2f12; --gold:#f5c451;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px; line-height:1.45; overflow-x:hidden;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:620px;margin:0 auto;padding:0 14px}
+button{font-family:inherit;font-size:inherit;color:inherit}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:99;display:none}
+
+/* ---------- home ---------- */
+#home{padding:18px 0 40px}
+h1{font-size:21px;line-height:1.25;margin:0 0 14px}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-weight:600}
+
+/* hero */
+.hero{display:flex;gap:14px;align-items:center}
+.ring{position:relative;flex:0 0 74px;height:74px}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;font-weight:700;line-height:1}
+.ring span i{font-style:normal;font-size:9.5px;font-weight:500;color:var(--muted);margin-top:2px}
+.heroinfo{flex:1;min-width:0}
+.lvl{display:flex;align-items:baseline;gap:7px;margin-bottom:5px}
+.lvl b{font-size:16.5px}
+.lvl em{font-style:normal;font-size:12px;color:var(--muted)}
+.xpbar{height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#8b5cf6);transition:width .5s}
+.flame{font-size:13px;color:var(--muted);margin-top:7px}
+.flame b{color:var(--fg)}
+.week{display:flex;gap:5px;margin-top:9px}
+.week div{flex:1;height:26px;border-radius:7px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)}
+.week div.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.week div.today{outline:2px solid var(--accent);outline-offset:1px}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 13px;font-size:13.5px;cursor:pointer;transition:.12s}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.chip small{opacity:.6;font-size:11.5px;margin-left:4px}
+.chip[aria-pressed="true"] small{opacity:.85}
+.bigbtn{display:block;width:100%;border:0;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:17px;font-weight:650;padding:16px;cursor:pointer;margin-top:4px}
+.bigbtn:active{filter:brightness(.93)}
+.bigbtn[disabled]{opacity:.45}
+.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-size:14px;font-weight:500;padding:11px}
+
+/* mastery list */
+.mrow{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13px}
+.mrow span:first-child{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbar{flex:0 0 78px;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.mbar i{display:block;height:100%;background:var(--ok)}
+.mnum{flex:0 0 42px;text-align:right;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.done{color:var(--gold)}
+
+/* badges */
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.badge{text-align:center;padding:9px 4px;border-radius:12px;border:1px solid var(--line);font-size:10.5px;color:var(--muted);line-height:1.25}
+.badge div{font-size:21px;filter:grayscale(1);opacity:.32;margin-bottom:3px}
+.badge.got{border-color:var(--gold);background:var(--warn-bg);color:var(--fg);font-weight:600}
+.badge.got div{filter:none;opacity:1}
+
+/* ---------- quiz ---------- */
+#quiz{display:none;min-height:100vh;min-height:100dvh;flex-direction:column}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px}
+.topin{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted)}
+.xbtn{border:0;background:transparent;font-size:19px;line-height:1;padding:4px 8px 4px 0;cursor:pointer;color:var(--muted)}
+.tprog{flex:1;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+.tprog i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.combo{font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums;transition:transform .15s}
+.combo.pop{transform:scale(1.45)}
+.timer{height:3px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.timer i{display:block;height:100%;width:100%;background:var(--accent);opacity:.55}
+.timer.low i{background:var(--bad);opacity:.8}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-top:8px;position:relative}
+.qcard.shake{animation:sh .32s}
+@keyframes sh{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.tag{font-size:11px;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tag.grey{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500}
+.tag.false{background:var(--bad-bg);color:var(--bad)}
+.tag.true{background:var(--ok-bg);color:var(--ok)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.qtext{font-size:16.5px;font-weight:600;line-height:1.4;margin:0 0 14px}
+.opt{display:flex;gap:11px;width:100%;text-align:left;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:13px;margin-bottom:9px;cursor:pointer;transition:.12s;font-size:15.3px;line-height:1.38}
+.opt:active{transform:scale(.995)}
+.opt .let{flex:0 0 25px;height:25px;border-radius:7px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:1px}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.ok .let{background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt.bad .let{background:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+.expl{border-radius:12px;padding:13px;margin-top:4px;font-size:14.5px;line-height:1.45;border:1px solid var(--line);background:var(--card)}
+.expl.ok{background:var(--ok-bg);border-color:var(--ok)}
+.expl.bad{background:var(--bad-bg);border-color:var(--bad)}
+.expl.warn{background:var(--warn-bg);border-color:var(--warn)}
+.expl b{display:block;margin-bottom:3px}
+.pop-xp{position:absolute;right:14px;top:8px;font-weight:800;font-size:19px;color:var(--ok);animation:fly 1s forwards;pointer-events:none}
+@keyframes fly{0%{opacity:0;transform:translateY(8px) scale(.8)}25%{opacity:1;transform:translateY(-2px) scale(1.1)}100%{opacity:0;transform:translateY(-26px) scale(1)}}
+.bottom{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 70%,transparent);padding:10px 0 14px;margin-top:8px}
+.srow{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.mark{border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer}
+.mark[aria-pressed="true"]{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.mastery{display:flex;gap:3px;margin-left:auto}
+.mastery i{width:7px;height:7px;border-radius:99px;background:var(--line);display:block}
+.mastery i.on{background:var(--ok)}
+
+/* ---------- result ---------- */
+#result{display:none;padding:22px 0 40px;text-align:center}
+.score{font-size:48px;font-weight:800;line-height:1}
+.rstats{display:flex;gap:9px;margin:16px 0 6px}
+.rstat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:11px 6px}
+.rstat b{display:block;font-size:19px}
+.rstat span{font-size:11px;color:var(--muted)}
+.newbadge{background:var(--warn-bg);border:1px solid var(--gold);border-radius:var(--radius);padding:12px;margin:12px 0;font-size:14px}
+.missed{margin-top:18px;text-align:left}
+.missed div{border-top:1px solid var(--line);padding:9px 0;font-size:14px;color:var(--muted)}
+.missed b{color:var(--fg)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:12px}
+.togrow{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding:3px 0}
+.sw{width:44px;height:25px;border-radius:99px;background:var(--line);border:0;position:relative;cursor:pointer;flex:0 0 44px}
+.sw i{position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:99px;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw[aria-pressed="true"]{background:var(--accent)}
+.sw[aria-pressed="true"] i{left:22px}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<div id="home" class="wrap">
+  <h1>Sejtbiológia gyakorló</h1>
+
+  <div class="panel hero">
+    <div class="ring">
+      <svg width="74" height="74" viewBox="0 0 74 74">
+        <circle cx="37" cy="37" r="31" fill="none" stroke="var(--line)" stroke-width="8"/>
+        <circle id="goalring" cx="37" cy="37" r="31" fill="none" stroke="var(--accent)" stroke-width="8"
+                stroke-linecap="round" stroke-dasharray="195" stroke-dashoffset="195"/>
+      </svg>
+      <span id="goaltxt">0<i>napi cél</i></span>
+    </div>
+    <div class="heroinfo">
+      <div class="lvl"><b id="lvltxt">1. szint</b><em id="xptxt">0 XP</em></div>
+      <div class="xpbar"><i id="xpbar" style="width:0"></i></div>
+      <div class="flame" id="flame">🔥 <b>0</b> napos sorozat</div>
+      <div class="week" id="week"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Elsajátítva <span id="mastertot" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
+    <div id="mastery"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Előadás</h2>
+    <div class="chips" id="lectures"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Mit kérdezzen</h2>
+    <div class="chips" id="modes">
+      <button class="chip" data-mode="smart" aria-pressed="true">Okos keverék</button>
+      <button class="chip" data-mode="all">Mind</button>
+      <button class="chip" data-mode="new">Új</button>
+      <button class="chip" data-mode="wrong">Amit elrontottam</button>
+      <button class="chip" data-mode="marked">Megjelölt</button>
+    </div>
+    <h2 style="margin-top:14px">Kör hossza</h2>
+    <div class="chips" id="lens">
+      <button class="chip" data-len="10">10</button>
+      <button class="chip" data-len="20" aria-pressed="true">20</button>
+      <button class="chip" data-len="40">40</button>
+      <button class="chip" data-len="0">összes</button>
+    </div>
+  </div>
+
+  <button class="bigbtn" id="start">Kezdés</button>
+  <button class="bigbtn ghost" id="installbtn" style="display:none;margin-top:10px">⬇︎ Telepítés a kezdőképernyőre</button>
+  <p class="hint" id="iostip" style="display:none">Telepítés iPhone-on: Safariban a <b>Megosztás</b> ikon → <b>Hozzáadás a főképernyőhöz</b>. Utána saját ikonnal, böngészőkeret nélkül, net nélkül is indul.</p>
+
+  <div class="panel" style="margin-top:12px">
+    <h2>Jelvények <span id="badgecount" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
+    <div class="badges" id="badges"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Beállítás</h2>
+    <div class="togrow"><span>Hang</span><button class="sw" id="sw-sound" aria-pressed="false"><i></i></button></div>
+    <div class="togrow"><span>Rezgés</span><button class="sw" id="sw-vibe" aria-pressed="true"><i></i></button></div>
+    <div class="togrow"><span>Időzítő és gyorsasági bónusz</span><button class="sw" id="sw-timer" aria-pressed="true"><i></i></button></div>
+    <div class="togrow"><span>Napi cél</span>
+      <span><button class="chip" id="goalminus" style="padding:4px 11px">−</button>
+      <b id="goalval" style="display:inline-block;min-width:26px;text-align:center">20</b>
+      <button class="chip" id="goalplus" style="padding:4px 11px">+</button></span>
+    </div>
+  </div>
+  <button class="bigbtn ghost" id="reset">Haladás törlése</button>
+  <p class="hint">Egy kérdés akkor „elsajátított", ha háromszor egymás után eltaláltad. A „! vitatott" kérdések nem rontják a statisztikát. A haladás a telefonodon marad, net nélkül is megy.</p>
+</div>
+
+<div id="quiz" class="wrap">
+  <div class="top">
+    <div class="topin">
+      <button class="xbtn" id="quit">✕</button>
+      <div class="tprog"><i id="tbar" style="width:0"></i></div>
+      <span id="counter">0/0</span>
+      <span class="combo" id="combo">🔥0</span>
+    </div>
+    <div class="timer" id="timerwrap"><i id="timerbar"></i></div>
+  </div>
+  <div class="qcard" id="qcard">
+    <div class="meta" id="meta"></div>
+    <p class="qtext" id="qtext"></p>
+    <div id="opts"></div>
+    <div id="expl"></div>
+    <div class="srow">
+      <button class="mark" id="markbtn" aria-pressed="false">☆ Megjelöl</button>
+      <span id="qid"></span>
+      <span class="mastery" id="mdots"><i></i><i></i><i></i></span>
+    </div>
+  </div>
+  <div class="bottom">
+    <button class="bigbtn" id="next" style="display:none">Következő →</button>
+  </div>
+</div>
+
+<div id="result" class="wrap">
+  <div class="score" id="r-score">0%</div>
+  <p class="sub" id="r-sub"></p>
+  <div class="rstats">
+    <div class="rstat"><b id="r-xp">0</b><span>XP</span></div>
+    <div class="rstat"><b id="r-streak">0</b><span>leghosszabb sorozat</span></div>
+    <div class="rstat"><b id="r-master">0</b><span>új elsajátított</span></div>
+  </div>
+  <div id="r-badges"></div>
+  <div id="r-goal" class="hint"></div>
+  <button class="bigbtn" id="again" style="margin-top:12px">Újabb kör</button>
+  <button class="bigbtn ghost" id="retryBad" style="margin-top:10px">A most elrontottak újra</button>
+  <button class="bigbtn ghost" id="tohome" style="margin-top:10px">Vissza a főoldalra</button>
+  <div class="missed" id="r-missed"></div>
+</div>
+
+<script>
+let Q = [], LEC = {};
+const KEY = "sejtbio-v2", OLD = "sejtbio-v1";
+const LETTERS = ["a","b","c","d"];
+const MASTER = 3;              // ennyi egymás utáni helyes = elsajátítva
+const QTIME = 25;              // másodperc
+
+/* ---------- store ---------- */
+let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1};
+try{
+  const raw = JSON.parse(localStorage.getItem(KEY) || "null");
+  if(raw) S = Object.assign(S, raw);
+  else {
+    const old = JSON.parse(localStorage.getItem(OLD) || "null");   // migráció
+    if(old) Object.keys(old).forEach(n=>{
+      S.q[n] = {ok:old[n].ok||0, bad:old[n].bad||0, mark:old[n].mark||0, run:0};
+      S.xp += (old[n].ok||0)*10;
+    });
+  }
+}catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function rec(n){ return S.q[n] || (S.q[n] = {ok:0,bad:0,mark:0,run:0}); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function dayCount(d){ return S.days[d] || 0; }
+function mastered(n){ const r=S.q[n]; return r && r.run >= MASTER; }
+function levelOf(xp){ return 1 + Math.floor(xp/500); }
+
+/* ---------- badges ---------- */
+const BADGES = [
+  {id:"first",  icon:"🎬", name:"Első kör",      test:()=>answeredTotal()>=1},
+  {id:"c10",    icon:"🔥", name:"10-es sorozat", test:()=>S.best>=10},
+  {id:"c25",    icon:"⚡", name:"25-ös sorozat", test:()=>S.best>=25},
+  {id:"a100",   icon:"💯", name:"100 válasz",    test:()=>answeredTotal()>=100},
+  {id:"lec1",   icon:"📘", name:"1 előadás kész",test:()=>fullLectures()>=1},
+  {id:"lec5",   icon:"📚", name:"5 előadás kész",test:()=>fullLectures()>=5},
+  {id:"half",   icon:"🧬", name:"Félút (209)",   test:()=>masterCount()>=209},
+  {id:"all",    icon:"👑", name:"Mind a 417",    test:()=>masterCount()>=417},
+  {id:"d3",     icon:"📅", name:"3 napos széria",test:()=>dayStreak()>=3},
+  {id:"d7",     icon:"🏆", name:"7 napos széria",test:()=>dayStreak()>=7},
+  {id:"fix20",  icon:"🛠️", name:"20 hiba javítva",test:()=>fixedCount()>=20},
+  {id:"lvl5",   icon:"🚀", name:"5. szint",      test:()=>levelOf(S.xp)>=5},
+];
+function answeredTotal(){ let t=0; for(const k in S.q) t += S.q[k].ok + S.q[k].bad; return t; }
+function masterCount(){ let t=0; for(const k in S.q) if(S.q[k].run>=MASTER) t++; return t; }
+function fixedCount(){ let t=0; for(const k in S.q){ const r=S.q[k]; if(r.bad>0 && r.run>=MASTER) t++; } return t; }
+function fullLectures(){
+  let n=0;
+  Object.keys(LEC).forEach(l=>{
+    const qs = Q.filter(q=>q.l==l);
+    if(qs.length && qs.every(q=>mastered(q.n))) n++;
+  });
+  return n;
+}
+function dayStreak(){
+  let n=0; const d=new Date();
+  for(;;){
+    const k = d.toISOString().slice(0,10);
+    if(dayCount(k) >= S.goal){ n++; d.setDate(d.getDate()-1); }
+    else if(n===0 && k===today()){ d.setDate(d.getDate()-1); }   // ma még mehet
+    else break;
+    if(n>999) break;
+  }
+  return n;
+}
+function checkBadges(){
+  const fresh = [];
+  BADGES.forEach(b=>{ if(!S.badges.includes(b.id) && b.test()){ S.badges.push(b.id); fresh.push(b); } });
+  if(fresh.length) save();
+  return fresh;
+}
+
+/* ---------- fx ---------- */
+let actx = null;
+function beep(ok){
+  if(!S.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    o.frequency.value = ok ? 880 : 180;
+    o.type = ok ? "sine" : "square";
+    g.gain.setValueAtTime(.08, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + (ok?.18:.25));
+    o.start(); o.stop(actx.currentTime + (ok?.2:.28));
+  }catch(e){}
+}
+function buzz(ms){ if(!S.vibe) return; try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+function confetti(){
+  const c = document.getElementById("confetti"), x = c.getContext("2d");
+  c.width = innerWidth; c.height = innerHeight; c.style.display = "block";
+  const cols = ["#2563eb","#8b5cf6","#22c55e","#f59e0b","#ef4444"];
+  const P = Array.from({length:70},()=>({
+    x:innerWidth/2 + (Math.random()-.5)*90, y:innerHeight*0.32,
+    vx:(Math.random()-.5)*9, vy:Math.random()*-11-3,
+    s:4+Math.random()*5, c:cols[(Math.random()*cols.length)|0], r:Math.random()*6 }));
+  let t = 0;
+  (function loop(){
+    t++; x.clearRect(0,0,c.width,c.height);
+    P.forEach(p=>{ p.vy += .4; p.x += p.vx; p.y += p.vy; p.r += .2;
+      x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.fillStyle = p.c;
+      x.fillRect(-p.s/2,-p.s/2,p.s,p.s*1.6); x.restore(); });
+    if(t < 110) requestAnimationFrame(loop);
+    else { x.clearRect(0,0,c.width,c.height); c.style.display="none"; }
+  })();
+}
+
+/* ---------- home ---------- */
+let selLec = new Set(), mode = "smart", len = 20;
+let pool = [], idx = 0, answered = false;
+let sStreak = 0, sBestStreak = 0, sOK = 0, sXP = 0, sMaster = 0, sBad = [], sAnswered = 0;
+let tHandle = null, tLeft = QTIME;
+
+const lecBox = document.getElementById("lectures");
+function boot(){
+  const allBtn = document.createElement("button");
+  allBtn.className = "chip"; allBtn.textContent = "Mind"; allBtn.dataset.lec = "0";
+  allBtn.setAttribute("aria-pressed","true");
+  lecBox.appendChild(allBtn);
+  Object.keys(LEC).forEach(k=>{
+    const b = document.createElement("button");
+    b.className = "chip"; b.dataset.lec = k;
+    b.innerHTML = LEC[k] + ' <small>'+Q.filter(q=>q.l==k).length+'</small>';
+    b.setAttribute("aria-pressed","false");
+    lecBox.appendChild(b);
+  });
+  document.getElementById("sw-sound").setAttribute("aria-pressed", !!S.sound);
+  document.getElementById("sw-vibe").setAttribute("aria-pressed", !!S.vibe);
+  document.getElementById("sw-timer").setAttribute("aria-pressed", !!S.timer);
+  document.getElementById("goalval").textContent = S.goal;
+  refresh();
+}
+fetch("quiz.json").then(r=>r.json()).then(d=>{ Q = d.questions; LEC = d.lectures; boot(); })
+ .catch(()=>{ document.querySelector("#home h1").insertAdjacentHTML("afterend",
+   '<p class="sub">A kérdések betöltése nem sikerült – frissítsd az oldalt netkapcsolattal.</p>'); });
+
+lecBox.addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  const v = b.dataset.lec;
+  if(v === "0") selLec.clear();
+  else { selLec.has(v) ? selLec.delete(v) : selLec.add(v); }
+  [...lecBox.children].forEach(c=>{
+    const cv = c.dataset.lec;
+    c.setAttribute("aria-pressed", cv==="0" ? (selLec.size===0) : selLec.has(cv));
+  });
+  refresh();
+});
+document.getElementById("modes").addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  mode = b.dataset.mode;
+  [...e.currentTarget.children].forEach(c=>c.setAttribute("aria-pressed", c===b));
+  refresh();
+});
+document.getElementById("lens").addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  len = +b.dataset.len;
+  [...e.currentTarget.children].forEach(c=>c.setAttribute("aria-pressed", c===b));
+  refresh();
+});
+function tog(id, key){
+  document.getElementById(id).addEventListener("click", e=>{
+    S[key] = S[key] ? 0 : 1; save();
+    e.currentTarget.setAttribute("aria-pressed", !!S[key]);
+    if(key==="sound" && S.sound) beep(true);
+  });
+}
+tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer");
+document.getElementById("goalminus").addEventListener("click",()=>{ S.goal = Math.max(5, S.goal-5); save(); document.getElementById("goalval").textContent=S.goal; refresh(); });
+document.getElementById("goalplus").addEventListener("click", ()=>{ S.goal = Math.min(100, S.goal+5); save(); document.getElementById("goalval").textContent=S.goal; refresh(); });
+
+function filtered(){
+  const base = Q.filter(q=>{
+    if(selLec.size && !selLec.has(String(q.l))) return false;
+    const r = S.q[q.n];
+    if(mode === "new")    return !r || (!r.ok && !r.bad);
+    if(mode === "wrong")  return r && r.bad > 0;
+    if(mode === "marked") return r && r.mark;
+    if(mode === "smart")  return !mastered(q.n);
+    return true;
+  });
+  return base;
+}
+function weight(q){                      // okos keverék: hibás és friss kérdés előre
+  const r = S.q[q.n];
+  if(!r) return 3;
+  if(r.bad > r.ok) return 6;
+  if(r.bad > 0) return 4;
+  if(r.run === 0) return 3;
+  return Math.max(1, 3 - r.run);
+}
+function pick(f, n){
+  if(mode !== "smart") { const a=f.slice(); shuffle(a); return n? a.slice(0,n): a; }
+  const bag = [];
+  f.forEach(q=>{ const w = weight(q); for(let i=0;i<w;i++) bag.push(q); });
+  shuffle(bag);
+  const out = [], seen = new Set();
+  for(const q of bag){ if(!seen.has(q.n)){ seen.add(q.n); out.push(q); if(n && out.length>=n) break; } }
+  return out;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } }
+
+function refresh(){
+  const lv = levelOf(S.xp), into = S.xp % 500;
+  document.getElementById("lvltxt").textContent = lv + ". szint";
+  document.getElementById("xptxt").textContent = S.xp + " XP · még " + (500-into) + " a következőig";
+  document.getElementById("xpbar").style.width = (into/5) + "%";
+
+  const dc = dayCount(today()), pct = Math.min(1, dc / S.goal);
+  document.getElementById("goalring").style.strokeDashoffset = 195 * (1-pct);
+  document.getElementById("goaltxt").innerHTML = dc + "/" + S.goal + "<i>ma</i>";
+  document.getElementById("flame").innerHTML = "🔥 <b>" + dayStreak() + "</b> napos sorozat · rekord combo <b>" + S.best + "</b>";
+
+  const wk = document.getElementById("week"); wk.innerHTML = "";
+  const names = ["V","H","K","Sze","Cs","P","Szo"];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const k = d.toISOString().slice(0,10);
+    const el = document.createElement("div");
+    el.textContent = names[d.getDay()];
+    if(dayCount(k) >= S.goal) el.className = "on";
+    if(i===0) el.className += " today";
+    wk.appendChild(el);
+  }
+
+  const mv = document.getElementById("mastery"); mv.innerHTML = "";
+  Object.keys(LEC).forEach(l=>{
+    const qs = Q.filter(q=>q.l==l), m = qs.filter(q=>mastered(q.n)).length;
+    const row = document.createElement("div"); row.className = "mrow";
+    const done = m===qs.length && qs.length;
+    row.innerHTML = '<span'+(done?' class="done"':'')+'>'+(done?"✓ ":"")+LEC[l]+'</span>'+
+      '<span class="mbar"><i style="width:'+(100*m/qs.length)+'%"></i></span>'+
+      '<span class="mnum">'+m+'/'+qs.length+'</span>';
+    mv.appendChild(row);
+  });
+  document.getElementById("mastertot").textContent = masterCount() + " / " + Q.length;
+
+  const bb = document.getElementById("badges"); bb.innerHTML = "";
+  BADGES.forEach(b=>{
+    const got = S.badges.includes(b.id);
+    const el = document.createElement("div");
+    el.className = "badge" + (got ? " got" : "");
+    el.innerHTML = "<div>"+b.icon+"</div>";
+    el.appendChild(document.createTextNode(b.name));
+    bb.appendChild(el);
+  });
+  document.getElementById("badgecount").textContent = S.badges.length + "/" + BADGES.length;
+
+  const n = filtered().length, btn = document.getElementById("start");
+  btn.disabled = n===0;
+  btn.textContent = n===0 ? (mode==="smart" ? "Mindent elsajátítottál 🎉" : "Nincs ilyen kérdés")
+                          : "Kezdés · " + (len ? Math.min(len,n) : n) + " kérdés";
+}
+
+document.getElementById("reset").addEventListener("click", ()=>{
+  if(confirm("Biztos törlöd az összes haladást, XP-t és jelvényt?")){
+    S = {q:{}, xp:0, best:0, days:{}, goal:S.goal, badges:[], sound:S.sound, vibe:S.vibe, timer:S.timer};
+    save(); refresh();
+  }
+});
+document.getElementById("start").addEventListener("click", ()=>{
+  const f = filtered();
+  pool = pick(f, len || 0);
+  idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0; sAnswered = 0;
+  show("quiz"); render();
+});
+function show(w){
+  document.getElementById("home").style.display   = w==="home" ? "block" : "none";
+  document.getElementById("quiz").style.display   = w==="quiz" ? "flex" : "none";
+  document.getElementById("result").style.display = w==="result" ? "block" : "none";
+  if(w!=="quiz") stopTimer();
+  window.scrollTo(0,0);
+  document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
+}
+
+/* ---------- timer ---------- */
+function startTimer(){
+  stopTimer();
+  const wrap = document.getElementById("timerwrap"), bar = document.getElementById("timerbar");
+  wrap.style.display = S.timer ? "" : "none";
+  if(!S.timer) return;
+  tLeft = QTIME; wrap.classList.remove("low"); bar.style.width = "100%";
+  tHandle = setInterval(()=>{
+    tLeft -= .1;
+    bar.style.width = Math.max(0, 100*tLeft/QTIME) + "%";
+    if(tLeft <= QTIME*0.3) wrap.classList.add("low");
+    if(tLeft <= 0) stopTimer();
+  }, 100);
+}
+function stopTimer(){ if(tHandle){ clearInterval(tHandle); tHandle = null; } }
+
+/* ---------- quiz ---------- */
+function render(){
+  const q = pool[idx];
+  answered = false;
+  document.getElementById("counter").textContent = (idx+1)+"/"+pool.length;
+  document.getElementById("combo").textContent = "🔥"+sStreak;
+  document.getElementById("tbar").style.width = (100*idx/pool.length)+"%";
+
+  const meta = document.getElementById("meta"); meta.innerHTML = "";
+  const t1 = document.createElement("span");
+  t1.className = "tag " + (q.ask==="igaz" ? "true":"false");
+  t1.textContent = q.ask==="igaz" ? "MELYIK AZ IGAZ?" : "MELYIK A HAMIS?";
+  meta.appendChild(t1);
+  const t2 = document.createElement("span");
+  t2.className = "tag grey";
+  t2.textContent = (LEC[q.l]||"").replace(/^\d+\.\s*/,"") + " · " + q.t;
+  meta.appendChild(t2);
+  if(q.f){ const t3=document.createElement("span"); t3.className="tag warn"; t3.textContent="! vitatott"; meta.appendChild(t3); }
+
+  document.getElementById("qtext").textContent = q.q.replace(/\s*\(Jelöld.*?\)\s*$/,"");
+  document.getElementById("qid").textContent = "#"+q.n;
+  const r = S.q[q.n];
+  [...document.getElementById("mdots").children].forEach((d,i)=>{
+    d.className = (r && r.run > i) ? "on" : "";
+  });
+  const mb = document.getElementById("markbtn");
+  mb.setAttribute("aria-pressed", !!(r && r.mark));
+  mb.textContent = (r && r.mark) ? "★ Megjelölve" : "☆ Megjelöl";
+
+  const box = document.getElementById("opts"); box.innerHTML = "";
+  q.o.forEach((text,i)=>{
+    const b = document.createElement("button");
+    b.className = "opt"; b.dataset.i = i;
+    b.innerHTML = '<span class="let">'+LETTERS[i]+'</span><span></span>';
+    b.lastChild.textContent = text;
+    b.addEventListener("click", ()=>answer(i));
+    box.appendChild(b);
+  });
+  document.getElementById("expl").innerHTML = "";
+  document.getElementById("next").style.display = "none";
+  startTimer();
+}
+
+function answer(i){
+  if(answered) return;
+  answered = true;
+  stopTimer();
+  const q = pool[idx];
+  const ci = q.c ? LETTERS.indexOf(q.c) : -1;
+  const good = ci >= 0 && i === ci;
+
+  [...document.getElementById("opts").children].forEach(b=>{
+    const bi = +b.dataset.i;
+    if(bi === ci) b.classList.add("ok");
+    else if(bi === i) b.classList.add("bad");
+    else b.classList.add("dim");
+  });
+
+  const r = rec(q.n);
+  let gained = 0;
+  if(ci >= 0){
+    sAnswered++;
+    const d = today(); S.days[d] = (S.days[d]||0) + 1;
+    if(good){
+      r.ok++; r.run = (r.run||0) + 1; sOK++; sStreak++;
+      sBestStreak = Math.max(sBestStreak, sStreak);
+      if(sStreak > S.best) S.best = sStreak;
+      const speed = (S.timer && tLeft > 0) ? Math.round(10 * tLeft / QTIME) : 0;
+      gained = 10 + speed + Math.min(10, sStreak - 1) * 2;
+      if(r.run === MASTER){ gained += 25; sMaster++; }
+      S.xp += gained; sXP += gained;
+      beep(true); buzz(18);
+      const p = document.createElement("div");
+      p.className = "pop-xp"; p.textContent = "+" + gained;
+      document.getElementById("qcard").appendChild(p);
+      setTimeout(()=>p.remove(), 1000);
+      const c = document.getElementById("combo");
+      c.textContent = "🔥"+sStreak; c.classList.add("pop");
+      setTimeout(()=>c.classList.remove("pop"), 160);
+      if(sStreak && sStreak % 10 === 0) confetti();
+    } else {
+      r.bad++; r.run = 0; sStreak = 0; sBad.push(q.n);
+      beep(false); buzz([40,60,40]);
+      const card = document.getElementById("qcard");
+      card.classList.add("shake"); setTimeout(()=>card.classList.remove("shake"), 340);
+      document.getElementById("combo").textContent = "🔥0";
+    }
+    save();
+  }
+
+  const e = document.getElementById("expl");
+  e.className = "expl " + (ci<0 ? "warn" : good ? "ok" : "bad");
+  const head = ci<0 ? "Nincs egyértelmű helyes válasz"
+                    : good ? ("Helyes – " + q.c + ")" + (r.run===MASTER ? "  ✅ elsajátítva!" : ""))
+                           : ("Nem jó. A helyes: " + q.c + ")");
+  e.innerHTML = "<b></b><span></span>";
+  e.firstChild.textContent = head;
+  e.lastChild.textContent = q.e;
+
+  [...document.getElementById("mdots").children].forEach((d,k)=>{ d.className = (r.run > k) ? "on" : ""; });
+  document.getElementById("tbar").style.width = (100*(idx+1)/pool.length)+"%";
+  const nx = document.getElementById("next");
+  nx.style.display = "";
+  nx.textContent = (idx+1 < pool.length) ? "Következő →" : "Eredmény →";
+  try{ nx.scrollIntoView({block:"nearest"}); }catch(err){}
+}
+
+document.getElementById("next").addEventListener("click", ()=>{
+  if(idx+1 < pool.length){ idx++; render(); window.scrollTo(0,0); }
+  else finish();
+});
+document.getElementById("markbtn").addEventListener("click", ()=>{
+  const q = pool[idx], r = rec(q.n);
+  r.mark = r.mark ? 0 : 1; save();
+  const mb = document.getElementById("markbtn");
+  mb.setAttribute("aria-pressed", !!r.mark);
+  mb.textContent = r.mark ? "★ Megjelölve" : "☆ Megjelöl";
+});
+document.getElementById("quit").addEventListener("click", ()=>{ refresh(); show("home"); });
+document.addEventListener("keydown", e=>{
+  if(document.getElementById("quiz").style.display === "none") return;
+  if(["1","2","3","4","a","b","c","d"].includes(e.key)){
+    const i = "1234".indexOf(e.key) >= 0 ? +e.key-1 : LETTERS.indexOf(e.key);
+    if(i>=0) answer(i);
+  }
+  if(e.key === "Enter" && answered) document.getElementById("next").click();
+});
+
+/* ---------- result ---------- */
+function finish(){
+  stopTimer();
+  const scored = pool.filter(q=>q.c).length;
+  const pct = scored ? Math.round(100*sOK/scored) : 0;
+  document.getElementById("r-score").textContent = pct + "%";
+  document.getElementById("r-sub").textContent =
+    sOK + "/" + scored + " helyes" + (scored<pool.length ? " ("+(pool.length-scored)+" nem pontozható)" : "");
+  document.getElementById("r-xp").textContent = "+" + sXP;
+  document.getElementById("r-streak").textContent = sBestStreak;
+  document.getElementById("r-master").textContent = sMaster;
+
+  const fresh = checkBadges();
+  const bz = document.getElementById("r-badges"); bz.innerHTML = "";
+  if(fresh.length){
+    const d = document.createElement("div");
+    d.className = "newbadge";
+    d.textContent = "Új jelvény: " + fresh.map(b=>b.icon+" "+b.name).join(" · ");
+    bz.appendChild(d);
+  }
+  const dc = dayCount(today());
+  const g = document.getElementById("r-goal");
+  g.textContent = dc >= S.goal ? ("Napi cél megvan ✅ (" + dc + "/" + S.goal + ") – " + dayStreak() + " napos sorozat")
+                               : ("Napi célig még " + (S.goal - dc) + " kérdés (" + dc + "/" + S.goal + ")");
+
+  const m = document.getElementById("r-missed"); m.innerHTML = "";
+  if(sBad.length){
+    const h = document.createElement("div"); h.innerHTML = "<b>Amit elrontottál</b>"; m.appendChild(h);
+    sBad.forEach(n=>{
+      const q = Q.find(x=>x.n===n), d = document.createElement("div");
+      d.innerHTML = "<b>#"+n+" · "+q.c+")</b> ";
+      d.appendChild(document.createTextNode(q.e));
+      m.appendChild(d);
+    });
+  }
+  document.getElementById("retryBad").style.display = sBad.length ? "" : "none";
+  save(); refresh(); show("result");
+  if(pct >= 80 || fresh.length || dc === S.goal) setTimeout(confetti, 180);
+}
+document.getElementById("again").addEventListener("click", ()=>document.getElementById("start").click());
+document.getElementById("tohome").addEventListener("click", ()=>show("home"));
+document.getElementById("retryBad").addEventListener("click", ()=>{
+  pool = sBad.map(n=>Q.find(x=>x.n===n));
+  idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0;
+  show("quiz"); render();
+});
+
+/* ---------- PWA ---------- */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./sw.js").catch(()=>{}); });
+}
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e=>{
+  e.preventDefault(); deferredPrompt = e;
+  const b = document.getElementById("installbtn");
+  if(b){ b.style.display = "block"; }
+});
+document.addEventListener("DOMContentLoaded", ()=>{
+  const b = document.getElementById("installbtn");
+  if(!b) return;
+  b.addEventListener("click", async ()=>{
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt(); await deferredPrompt.userChoice;
+    deferredPrompt = null; b.style.display = "none";
+  });
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const tip = document.getElementById("iostip");
+  if(tip && ios && !standalone) tip.style.display = "block";
+});
+</script>
+</body>
+</html>
