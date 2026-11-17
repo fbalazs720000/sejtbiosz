@@ -657,9 +657,8 @@ function answer(i){
   }
 
   const e = document.getElementById("expl");
-  e.className = "expl " + (ci<0 ? "warn" : good ? "ok" : "bad");
-  const head = ci<0 ? "Nincs egyértelmű helyes válasz"
-                    : good ? ("Helyes – " + q.c + ")" + (r.run===MASTER ? "  ✅ elsajátítva!" : ""))
+  e.className = "expl " + (good ? "ok" : "bad");
+  const head = good ? ("Helyes – " + q.c + ")" + (r.run===MASTER ? "  ✅ elsajátítva!" : ""))
                            : ("Nem jó. A helyes: " + q.c + ")");
   e.innerHTML = "<b></b><span></span>";
   e.firstChild.textContent = head;
