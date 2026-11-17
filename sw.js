@@ -1,4 +1,4 @@
-const CACHE = "sejtbio-v5";
+const CACHE = "sejtbio-v6";
 const FILES = ["./","./index.html","./quiz.json","./manifest.webmanifest",
                "./icon-192.png","./icon-512.png","./apple-touch-icon.png","./favicon.png"];
 

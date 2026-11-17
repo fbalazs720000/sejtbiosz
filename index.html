@@ -222,7 +222,8 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 
   <div class="panel">
     <h2>Beállítás</h2>
-    <div class="togrow"><span>Hang</span><button class="sw" id="sw-sound" aria-pressed="false"><i></i></button></div>
+    <div class="togrow"><span>Zene</span><button class="sw" id="sw-music" aria-pressed="true"><i></i></button></div>
+    <div class="togrow"><span>Hang (helyes/hibás jelzés)</span><button class="sw" id="sw-sound" aria-pressed="false"><i></i></button></div>
     <div class="togrow"><span>Rezgés</span><button class="sw" id="sw-vibe" aria-pressed="true"><i></i></button></div>
     <div class="togrow"><span>Időzítő és gyorsasági bónusz</span><button class="sw" id="sw-timer" aria-pressed="true"><i></i></button></div>
     <div class="togrow"><span>Napi cél</span>
@@ -242,6 +243,7 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
       <div class="tprog"><i id="tbar" style="width:0"></i></div>
       <span id="counter">0/0</span>
       <span class="combo" id="combo">🔥0</span>
+      <button class="xbtn" id="mutebtn" style="padding:4px 0 4px 4px;font-size:16px">🔊</button>
     </div>
     <div class="timer" id="timerwrap"><i id="timerbar"></i></div>
   </div>
@@ -285,7 +287,7 @@ const MASTER = 3;              // ennyi egymás utáni helyes = elsajátítva
 const QTIME = 25;              // másodperc
 
 /* ---------- store ---------- */
-let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1};
+let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1};
 try{
   const raw = JSON.parse(localStorage.getItem(KEY) || "null");
   if(raw) S = Object.assign(S, raw);
@@ -348,6 +350,97 @@ function checkBadges(){
   return fresh;
 }
 
+
+/* ---------- zene: böngészőben szintetizált, eredeti loop ---------- */
+const Music = (function(){
+  let ctx=null, master=null, filt=null, timer=null, nextT=0, stepN=0, running=false;
+  const BPM=112, STEP=(60/BPM)/4;                 // tizenhatod
+  const CH = [[57,60,64],[53,57,60],[48,52,55],[55,59,62]];   // Am F C G
+  const BS = [45,41,36,43];
+  const f = m => 440*Math.pow(2,(m-69)/12);
+
+  function ensure(){
+    if(ctx) return;
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0;
+    filt = ctx.createBiquadFilter(); filt.type="lowpass"; filt.frequency.value=2600; filt.Q.value=1;
+    filt.connect(master); master.connect(ctx.destination);
+  }
+  function tone(t, freq, dur, type, gain, dest){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(gain,t+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0008,t+dur);
+    o.connect(g); g.connect(dest||filt); o.start(t); o.stop(t+dur+0.02);
+  }
+  function kick(t){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(45,t+0.12);
+    g.gain.setValueAtTime(0.5,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+0.2);
+  }
+  function noise(t, dur, gain, hp){
+    const n=Math.floor(ctx.sampleRate*dur), buf=ctx.createBuffer(1,n,ctx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+    const s=ctx.createBufferSource(); s.buffer=buf;
+    const b=ctx.createBiquadFilter(); b.type="highpass"; b.frequency.value=hp;
+    const g=ctx.createGain(); g.gain.value=gain;
+    s.connect(b); b.connect(g); g.connect(master); s.start(t);
+  }
+  function schedule(){
+    if(!running) return;
+    while(nextT < ctx.currentTime + 0.15){
+      const bar = Math.floor(stepN/16)%4, s = stepN%16, chord = CH[bar];
+      if(s%4===0) kick(nextT);
+      if(s===4||s===12) noise(nextT,0.16,0.14,1200);
+      if(s%2===0) noise(nextT,0.03,(s%4===2?0.07:0.04),6000);
+      if(s%4===0) tone(nextT, f(BS[bar]), 0.22, "sawtooth", 0.18);
+      if(s===6||s===14) tone(nextT, f(BS[bar]+12), 0.14, "sawtooth", 0.12);
+      if(s%2===1){
+        const idx=((s-1)/2)|0;
+        tone(nextT, f(chord[idx%3] + (idx>=4?12:0)), 0.13, "square", 0.045);
+      }
+      if(s===15 && bar===3) tone(nextT, f(chord[2]+12), 0.3, "triangle", 0.05);
+      nextT += STEP; stepN++;
+    }
+    timer = setTimeout(schedule, 40);
+  }
+  return {
+    start(){
+      ensure();
+      if(ctx.state==="suspended") ctx.resume();
+      if(running) return;
+      running=true; stepN=0; nextT=ctx.currentTime+0.08;
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setValueAtTime(0.0001, ctx.currentTime);
+      master.gain.exponentialRampToValueAtTime(0.14, ctx.currentTime+1.2);
+      schedule();
+    },
+    stop(){
+      if(!ctx || !running) return;
+      running=false; clearTimeout(timer);
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setValueAtTime(master.gain.value||0.1, ctx.currentTime);
+      master.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.5);
+    },
+    tension(on){            // utolsó másodpercek: szűrő nyit + gyorsabb lüktetés érzete
+      if(!ctx || !running) return;
+      filt.frequency.cancelScheduledValues(ctx.currentTime);
+      filt.frequency.linearRampToValueAtTime(on?5200:2600, ctx.currentTime+0.4);
+    },
+    duck(){                 // válasz után rövid halkítás, hogy a visszajelzés hallatsszon
+      if(!ctx || !running) return;
+      const now=ctx.currentTime;
+      master.gain.cancelScheduledValues(now);
+      master.gain.setValueAtTime(master.gain.value||0.14, now);
+      master.gain.linearRampToValueAtTime(0.05, now+0.05);
+      master.gain.linearRampToValueAtTime(0.14, now+0.9);
+    },
+    running(){ return running; }
+  };
+})();
+
 /* ---------- fx ---------- */
 let actx = null;
 function beep(ok){
@@ -405,6 +498,7 @@ function boot(){
   document.getElementById("sw-sound").setAttribute("aria-pressed", !!S.sound);
   document.getElementById("sw-vibe").setAttribute("aria-pressed", !!S.vibe);
   document.getElementById("sw-timer").setAttribute("aria-pressed", !!S.timer);
+  document.getElementById("sw-music").setAttribute("aria-pressed", !!S.music);
   document.getElementById("goalval").textContent = S.goal;
   refresh();
 }
@@ -442,7 +536,12 @@ function tog(id, key){
     if(key==="sound" && S.sound) beep(true);
   });
 }
-tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer");
+tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer"); tog("sw-music","music");
+document.getElementById("sw-music").addEventListener("click", ()=>{
+  if(S.music){ if(document.getElementById("quiz").style.display!=="none") Music.start(); }
+  else Music.stop();
+  const b=document.getElementById("mutebtn"); if(b) b.textContent = S.music ? "🔊" : "🔇";
+});
 document.getElementById("goalminus").addEventListener("click",()=>{ S.goal = Math.max(5, S.goal-5); save(); document.getElementById("goalval").textContent=S.goal; refresh(); });
 document.getElementById("goalplus").addEventListener("click", ()=>{ S.goal = Math.min(100, S.goal+5); save(); document.getElementById("goalval").textContent=S.goal; refresh(); });
 
@@ -540,12 +639,13 @@ document.getElementById("start").addEventListener("click", ()=>{
   pool = pick(f, len || 0);
   idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0; sAnswered = 0;
   show("quiz"); render();
+  if(S.music) Music.start();
 });
 function show(w){
   document.getElementById("home").style.display   = w==="home" ? "block" : "none";
   document.getElementById("quiz").style.display   = w==="quiz" ? "flex" : "none";
   document.getElementById("result").style.display = w==="result" ? "block" : "none";
-  if(w!=="quiz") stopTimer();
+  if(w!=="quiz"){ stopTimer(); Music.stop(); }
   window.scrollTo(0,0);
   document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
 }
@@ -556,11 +656,11 @@ function startTimer(){
   const wrap = document.getElementById("timerwrap"), bar = document.getElementById("timerbar");
   wrap.style.display = S.timer ? "" : "none";
   if(!S.timer) return;
-  tLeft = QTIME; wrap.classList.remove("low"); bar.style.width = "100%";
+  tLeft = QTIME; wrap.classList.remove("low"); bar.style.width = "100%"; Music.tension(false);
   tHandle = setInterval(()=>{
     tLeft -= .1;
     bar.style.width = Math.max(0, 100*tLeft/QTIME) + "%";
-    if(tLeft <= QTIME*0.3) wrap.classList.add("low");
+    if(tLeft <= QTIME*0.3){ wrap.classList.add("low"); Music.tension(true); }
     if(tLeft <= 0) stopTimer();
   }, 100);
 }
@@ -624,6 +724,7 @@ function answer(i){
     else b.classList.add("dim");
   });
 
+  Music.duck();
   const r = rec(q.n);
   let gained = 0;
   if(ci >= 0){
@@ -684,6 +785,16 @@ document.getElementById("markbtn").addEventListener("click", ()=>{
   mb.textContent = r.mark ? "★ Megjelölve" : "☆ Megjelöl";
 });
 document.getElementById("quit").addEventListener("click", ()=>{ refresh(); show("home"); });
+document.getElementById("mutebtn").addEventListener("click", e=>{
+  S.music = S.music ? 0 : 1; save();
+  e.currentTarget.textContent = S.music ? "🔊" : "🔇";
+  const sw = document.getElementById("sw-music"); if(sw) sw.setAttribute("aria-pressed", !!S.music);
+  if(S.music) Music.start(); else Music.stop();
+});
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) Music.stop();
+  else if(S.music && document.getElementById("quiz").style.display !== "none") Music.start();
+});
 document.addEventListener("keydown", e=>{
   if(document.getElementById("quiz").style.display === "none") return;
   if(["1","2","3","4","a","b","c","d"].includes(e.key)){
@@ -737,7 +848,7 @@ document.getElementById("tohome").addEventListener("click", ()=>show("home"));
 document.getElementById("retryBad").addEventListener("click", ()=>{
   pool = sBad.map(n=>Q.find(x=>x.n===n));
   idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0;
-  show("quiz"); render();
+  show("quiz"); render(); if(S.music) Music.start();
 });
 
 /* ---------- PWA ---------- */
