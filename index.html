@@ -268,14 +268,35 @@ body.night h1::after{content:" 🦉"}
   </div>
 
   <div class="panel">
+    <h2>Fiók <span style="float:right;text-transform:none;letter-spacing:0;font-weight:400">több eszköz, közös haladás</span></h2>
+    <div id="authout">
+      <p style="font-size:13px;color:var(--muted);margin:0 0 10px">
+        Fiók nélkül a haladás csak ezen az eszközön, ebben a böngészőben marad. Ha készítesz egyet, a telón és a gépen ugyanaz az XP, jelvény és elsajátított kérdés fut.</p>
+      <input class="namein" id="authuser" style="width:100%;text-align:left;margin-bottom:8px" placeholder="felhasználónév" autocomplete="username">
+      <input class="namein" id="authpass" type="password" style="width:100%;text-align:left" placeholder="jelszó (min. 6 karakter)" autocomplete="current-password">
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="bigbtn" id="loginbtn" style="flex:1;padding:12px;font-size:15px">Belépés</button>
+        <button class="bigbtn ghost" id="signupbtn" style="flex:1;padding:12px;font-size:15px">Új fiók</button>
+      </div>
+      <p class="hint" id="authmsg"></p>
+    </div>
+    <div id="authin" style="display:none">
+      <div style="font-size:14px;margin-bottom:3px">Belépve: <b id="whoami"></b></div>
+      <div class="hint" id="synctime" style="margin:0 0 10px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="bigbtn" id="syncbtn" style="flex:1;padding:12px;font-size:15px">Szinkronizálás most</button>
+        <button class="bigbtn ghost" id="logoutbtn" style="flex:1;padding:12px;font-size:15px">Kilépés</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Online toplista <span style="float:right;text-transform:none;letter-spacing:0;font-weight:400">közös, minden készüléken</span></h2>
     <div id="joinbox" style="display:none">
-      <p style="font-size:13px;color:var(--muted);margin:0 0 10px">
-        Itt az évfolyam közös listája fut. Ha beszállsz, a <b>megadott neved</b>, az XP-d, az elsajátított kérdéseid száma és a legjobb combód látszik mindenkinek, aki megnyitja az appot. Bármikor kikapcsolhatod.</p>
-      <button class="bigbtn" id="joinbtn">Beszállok a toplistába</button>
-      <p class="hint" id="joinhint"></p>
+      <p style="font-size:13px;color:var(--muted);margin:0">A toplista ki van kapcsolva a Beállításoknál. Kapcsold vissza, ha látni akarod a többieket.</p>
     </div>
     <div id="boards" style="display:none">
+      <p class="hint" style="margin:0 0 8px">A neved, az XP-d, az elsajátított kérdéseid száma és a legjobb combód látszik a többieknek. A Beállításokban kikapcsolható.</p>
       <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 0 6px">Összesített (XP)</div>
       <div class="hof" id="globalboard"></div>
       <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px">Mai kihívás</div>
@@ -368,7 +389,7 @@ const QTIME = 25;              // másodperc
 
 /* ---------- store ---------- */
 let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1,
-         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:0, cid:''};
+         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:1, cid:'', tok:null, lastSync:0};
 try{
   const raw = JSON.parse(localStorage.getItem(KEY) || "null");
   if(raw) S = Object.assign(S, raw);
@@ -380,6 +401,9 @@ try{
     });
   }
 }catch(e){}
+// a korábbi verzióban a toplista alapból ki volt kapcsolva – egyszer bekapcsoljuk
+if(S.onlineMigrated !== 1){ S.online = 1; S.onlineMigrated = 1; }
+
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 function rec(n){ return S.q[n] || (S.q[n] = {ok:0,bad:0,mark:0,run:0}); }
 function today(){ return new Date().toISOString().slice(0,10); }
@@ -548,7 +572,7 @@ function clientId(){
 async function sbCall(fn, body){
   const r = await fetch(SB_URL + "/rest/v1/rpc/" + fn, {
     method: "POST",
-    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"},
+    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + bearer(), "Content-Type": "application/json"},
     body: JSON.stringify(body || {})
   });
   if(!r.ok) throw new Error("HTTP " + r.status);
@@ -557,6 +581,7 @@ async function sbCall(fn, body){
 }
 async function pushScore(dDate, dScore){
   if(!S.online) return;
+  await ensureToken();
   const nm = (S.name||"").trim();
   if(!nm) return;
   try{
@@ -618,6 +643,175 @@ async function joinBoard(){
   const sw = document.getElementById("sw-online"); if(sw) sw.setAttribute("aria-pressed", true);
   await pushScore();
   loadBoards();
+}
+
+
+/* ---------- fiók (Supabase Auth) és többeszközös szinkron ---------- */
+const AUTH_DOM = "@u.sejtbiosz.hu";          // belső cím, levél sosem megy rá
+
+function loggedIn(){ return !!(S.tok && S.tok.access_token); }
+function jwtUid(){
+  try{
+    const p = JSON.parse(atob(S.tok.access_token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    return p.sub;
+  }catch(e){ return null; }
+}
+function bearer(){ return loggedIn() ? S.tok.access_token : SB_KEY; }
+function userToEmail(u){
+  return String(u||"").toLowerCase().trim().replace(/[^a-z0-9._-]/g, "") + AUTH_DOM;
+}
+function emailToUser(e){ return String(e||"").split("@")[0]; }
+
+async function authPost(path, body){
+  const r = await fetch(SB_URL + path, {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  });
+  const t = await r.text();
+  let j = null; try{ j = t ? JSON.parse(t) : null; }catch(e){}
+  if(!r.ok) throw Object.assign(new Error((j && (j.msg || j.error_description || j.error)) || ("HTTP " + r.status)),
+                                {code: j && (j.error_code || j.error)});
+  return j;
+}
+function saveToken(j){
+  if(!j || !j.access_token) return false;
+  S.tok = {access_token: j.access_token, refresh_token: j.refresh_token,
+           exp: Date.now() + ((j.expires_in || 3600) - 60) * 1000,
+           user: emailToUser((j.user && j.user.email) || "")};
+  save(); return true;
+}
+async function ensureToken(){
+  if(!loggedIn()) return false;
+  if(Date.now() < S.tok.exp) return true;
+  try{
+    const j = await authPost("/auth/v1/token?grant_type=refresh_token", {refresh_token: S.tok.refresh_token});
+    return saveToken(j);
+  }catch(e){ S.tok = null; save(); return false; }
+}
+
+/* állapot ki- és összefésülése */
+function exportState(){
+  return {q:S.q, xp:S.xp, best:S.best, days:S.days, goal:S.goal, badges:S.badges, name:S.name,
+          hof:S.hof, boss:S.boss, daily:S.daily, crits:S.crits, duels:S.duels,
+          perfect:S.perfect||0, nightOwl:S.nightOwl||0};
+}
+function mergeState(a, b){
+  a = a || {}; b = b || {};
+  const uniq = (x,y) => Array.from(new Set([].concat(x||[], y||[])));
+  const out = {
+    xp: Math.max(a.xp||0, b.xp||0),
+    best: Math.max(a.best||0, b.best||0),
+    crits: Math.max(a.crits||0, b.crits||0),
+    duels: Math.max(a.duels||0, b.duels||0),
+    perfect: (a.perfect||b.perfect) ? 1 : 0,
+    nightOwl: (a.nightOwl||b.nightOwl) ? 1 : 0,
+    goal: a.goal || b.goal || 20,
+    name: (a.name && a.name.trim()) || b.name || "",
+    badges: uniq(a.badges, b.badges),
+    boss: uniq(a.boss, b.boss),
+    days: Object.assign({}, b.days || {}),
+    daily: Object.assign({}, b.daily || {}),
+    q: Object.assign({}, b.q || {})
+  };
+  Object.keys(a.days||{}).forEach(k => out.days[k] = Math.max(a.days[k]||0, (b.days||{})[k]||0));
+  Object.keys(a.daily||{}).forEach(k => {
+    const x = a.daily[k], y = (b.daily||{})[k];
+    out.daily[k] = (!y || (x && (x.o||0) >= (y.o||0))) ? x : y;
+  });
+  Object.keys(a.q||{}).forEach(n => {
+    const x = a.q[n] || {}, y = (b.q||{})[n] || {};
+    out.q[n] = {ok: Math.max(x.ok||0, y.ok||0), bad: Math.max(x.bad||0, y.bad||0),
+                mark: (x.mark || y.mark) ? 1 : 0, run: Math.max(x.run||0, y.run||0)};
+  });
+  const all = [].concat(a.hof||[], b.hof||[]);
+  out.hof = all.filter((e,i) => all.findIndex(z => z.n===e.n && z.p===e.p && z.d===e.d && z.o===e.o) === i)
+               .sort((x,y) => (y.p||0)-(x.p||0) || (y.t||0)-(x.t||0)).slice(0,12);
+  return out;
+}
+function applyState(st){
+  Object.keys(st).forEach(k => { S[k] = st[k]; });
+  save();
+}
+
+async function pullProfile(){
+  if(!await ensureToken()) return null;
+  const uid = jwtUid(); if(!uid) return null;
+  const r = await fetch(SB_URL + "/rest/v1/profiles?select=state,name&user_id=eq." + uid, {
+    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + S.tok.access_token}
+  });
+  if(!r.ok) return null;
+  const rows = await r.json();
+  return rows && rows[0] ? rows[0] : null;
+}
+async function pushProfile(){
+  if(!await ensureToken()) return false;
+  const uid = jwtUid(); if(!uid) return false;
+  const r = await fetch(SB_URL + "/rest/v1/profiles", {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + S.tok.access_token,
+              "Content-Type": "application/json", "Prefer": "resolution=merge-duplicates"},
+    body: JSON.stringify({user_id: uid, name: (S.name||"").trim() || "Névtelen sejt", state: exportState()})
+  });
+  if(r.ok){ S.lastSync = Date.now(); save(); }
+  return r.ok;
+}
+async function syncNow(){
+  if(!loggedIn()) return;
+  const row = await pullProfile();
+  if(row && row.state) applyState(mergeState(exportState(), row.state));
+  await pushProfile();
+  await pushScore();
+  refresh(); loadBoards(); accountUI();
+}
+
+function authError(e){
+  const c = (e && e.code) || "", m = (e && e.message) || "";
+  if(c === "over_email_send_rate_limit" || /confirm/i.test(m))
+    return "A projektben még be van kapcsolva az e-mail megerősítés. Supabase → Authentication → Sign In / Providers → Email → 'Confirm email' kikapcsolása.";
+  if(c === "invalid_credentials" || /invalid login/i.test(m)) return "Hibás felhasználónév vagy jelszó.";
+  if(c === "user_already_exists" || /already registered/i.test(m)) return "Ez a név már foglalt – próbálj belépni.";
+  if(c === "weak_password" || /password/i.test(m)) return "A jelszó legyen legalább 6 karakter.";
+  if(c === "email_address_invalid") return "A felhasználónév csak betű, szám, pont, kötőjel lehet (min. 3 karakter).";
+  return m || "Nem sikerült.";
+}
+async function doAuth(mode){
+  const u = document.getElementById("authuser").value.trim();
+  const p = document.getElementById("authpass").value;
+  const msg = document.getElementById("authmsg");
+  const clean = u.toLowerCase().replace(/[^a-z0-9._-]/g, "");
+  if(clean.length < 3){ msg.textContent = "A felhasználónév legalább 3 karakter (betű, szám, pont, kötőjel)."; return; }
+  if(p.length < 6){ msg.textContent = "A jelszó legalább 6 karakter."; return; }
+  msg.textContent = mode === "up" ? "Fiók készítése…" : "Belépés…";
+  try{
+    const j = mode === "up"
+      ? await authPost("/auth/v1/signup", {email: userToEmail(clean), password: p})
+      : await authPost("/auth/v1/token?grant_type=password", {email: userToEmail(clean), password: p});
+    if(!saveToken(j)){
+      msg.textContent = "A fiók elkészült, de megerősítés kell hozzá – kapcsold ki a 'Confirm email' opciot a Supabase-ben.";
+      return;
+    }
+    if(!(S.name||"").trim()){ S.name = clean.slice(0,14); save(); }
+    msg.textContent = "Szinkronizálás…";
+    await syncNow();
+    msg.textContent = "";
+  }catch(e){ msg.textContent = authError(e); }
+}
+function signOut(){
+  S.tok = null; save(); accountUI();
+}
+function accountUI(){
+  const out = document.getElementById("authout"), inn = document.getElementById("authin");
+  if(!out || !inn) return;
+  if(loggedIn()){
+    out.style.display = "none"; inn.style.display = "block";
+    document.getElementById("whoami").textContent = S.tok.user || "belépve";
+    document.getElementById("synctime").textContent = S.lastSync
+      ? ("utolsó szinkron: " + new Date(S.lastSync).toLocaleString("hu-HU"))
+      : "még nem szinkronizált";
+  } else {
+    out.style.display = "block"; inn.style.display = "none";
+  }
 }
 
 /* ---------- verseny, boss, easter eggek ---------- */
@@ -773,9 +967,12 @@ function boot(){
   const ni = document.getElementById("nameinput");
   ni.value = S.name || "";
   ni.addEventListener("input", ()=>{ S.name = ni.value.slice(0,14); save(); });
+  if(!(S.name||"").trim()){ S.name = "Sejt" + (1000 + Math.floor(Math.random()*9000)); save(); }
   applyNight();
+  accountUI();
   refresh();
   loadBoards();
+  if(loggedIn()) syncNow();
 }
 fetch("quiz.json").then(r=>r.json()).then(d=>{ Q = d.questions; LEC = d.lectures; boot(); })
  .catch(()=>{ document.querySelector("#home h1").insertAdjacentHTML("afterend",
@@ -813,7 +1010,14 @@ function tog(id, key){
 }
 tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer"); tog("sw-music","music"); tog("sw-online","online");
 document.getElementById("sw-online").addEventListener("click", ()=>{ if(S.online) pushScore(); loadBoards(); });
-document.getElementById("joinbtn").addEventListener("click", joinBoard);
+document.getElementById("loginbtn").addEventListener("click", ()=>doAuth("in"));
+document.getElementById("signupbtn").addEventListener("click", ()=>doAuth("up"));
+document.getElementById("syncbtn").addEventListener("click", async ()=>{
+  const b = document.getElementById("syncbtn"); const t = b.textContent;
+  b.textContent = "Szinkronizálás…"; await syncNow(); b.textContent = "Kész ✓";
+  setTimeout(()=>b.textContent = t, 1500);
+});
+document.getElementById("logoutbtn").addEventListener("click", signOut);
 document.getElementById("refreshboard").addEventListener("click", loadBoards);
 document.getElementById("sw-music").addEventListener("click", ()=>{
   if(S.music){ if(document.getElementById("quiz").style.display!=="none") Music.start(); }
@@ -1264,6 +1468,7 @@ function finish(){
   document.getElementById("linkbox").style.display = "none";
   save();
   if(roundMode === "daily") pushScore(today(), sOK); else pushScore();
+  if(loggedIn()) pushProfile();
   refresh(); show("result");
   if(pct >= 80 || fresh.length || dc === S.goal) setTimeout(confetti, 180);
 }
