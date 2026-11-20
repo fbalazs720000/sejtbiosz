@@ -268,7 +268,24 @@ body.night h1::after{content:" 🦉"}
   </div>
 
   <div class="panel">
-    <h2>Dicsőségtábla <span id="hofhint" style="float:right;text-transform:none;letter-spacing:0;font-weight:400"></span></h2>
+    <h2>Online toplista <span style="float:right;text-transform:none;letter-spacing:0;font-weight:400">közös, minden készüléken</span></h2>
+    <div id="joinbox" style="display:none">
+      <p style="font-size:13px;color:var(--muted);margin:0 0 10px">
+        Itt az évfolyam közös listája fut. Ha beszállsz, a <b>megadott neved</b>, az XP-d, az elsajátított kérdéseid száma és a legjobb combód látszik mindenkinek, aki megnyitja az appot. Bármikor kikapcsolhatod.</p>
+      <button class="bigbtn" id="joinbtn">Beszállok a toplistába</button>
+      <p class="hint" id="joinhint"></p>
+    </div>
+    <div id="boards" style="display:none">
+      <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 0 6px">Összesített (XP)</div>
+      <div class="hof" id="globalboard"></div>
+      <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px">Mai kihívás</div>
+      <div class="hof" id="dailyboard"></div>
+      <button class="bigbtn ghost" id="refreshboard" style="margin-top:12px">Frissítés</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Helyi dicsőségtábla <span id="hofhint" style="float:right;text-transform:none;letter-spacing:0;font-weight:400"></span></h2>
     <div class="hof" id="hof"></div>
   </div>
 
@@ -279,6 +296,7 @@ body.night h1::after{content:" 🦉"}
 
   <div class="panel">
     <h2>Beállítás</h2>
+    <div class="togrow"><span>Online toplista</span><button class="sw" id="sw-online" aria-pressed="false"><i></i></button></div>
     <div class="togrow"><span>Neved (dicsőségtábla, kihívás)</span><input class="namein" id="nameinput" maxlength="14" placeholder="Te"></div>
     <div class="togrow"><span>Zene</span><button class="sw" id="sw-music" aria-pressed="true"><i></i></button></div>
     <div class="togrow"><span>Hang (helyes/hibás jelzés)</span><button class="sw" id="sw-sound" aria-pressed="false"><i></i></button></div>
@@ -350,7 +368,7 @@ const QTIME = 25;              // másodperc
 
 /* ---------- store ---------- */
 let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1,
-         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0};
+         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:0, cid:''};
 try{
   const raw = JSON.parse(localStorage.getItem(KEY) || "null");
   if(raw) S = Object.assign(S, raw);
@@ -513,6 +531,95 @@ const Music = (function(){
 })();
 
 
+
+/* ---------- online toplista ---------- */
+const SB_URL = "https://kikiatyfekhzutxdimac.supabase.co";
+const SB_KEY = "sb_publishable_c_p6vtEgmJm6Mrgdzgfeng_kmzQO37H";
+
+function clientId(){
+  if(!S.cid){
+    S.cid = (crypto.randomUUID ? crypto.randomUUID()
+      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{
+          const r = Math.random()*16|0; return (c==="x" ? r : (r&3|8)).toString(16); }));
+    save();
+  }
+  return S.cid;
+}
+async function sbCall(fn, body){
+  const r = await fetch(SB_URL + "/rest/v1/rpc/" + fn, {
+    method: "POST",
+    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify(body || {})
+  });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+async function pushScore(dDate, dScore){
+  if(!S.online) return;
+  const nm = (S.name||"").trim();
+  if(!nm) return;
+  try{
+    await sbCall("submit_score", {
+      p_client: clientId(), p_name: nm, p_xp: S.xp,
+      p_mastered: masterCount(), p_combo: S.best,
+      p_daily_date: dDate || null,
+      p_daily_score: (dScore === undefined || dScore === null) ? null : dScore
+    });
+  }catch(e){ /* offline: majd a következő kör végén */ }
+}
+function boardRows(box, rows, fmt, mine){
+  box.innerHTML = "";
+  if(!rows || !rows.length){
+    const d = document.createElement("div");
+    d.innerHTML = "<span>Még senki. Legyél te az első.</span>";
+    box.appendChild(d); return;
+  }
+  rows.slice(0,10).forEach((e,i)=>{
+    const d = document.createElement("div");
+    d.innerHTML = "<b></b><span></span><em></em>";
+    d.children[0].textContent = ["🥇","🥈","🥉"][i] || (i+1)+".";
+    d.children[1].textContent = e.name;
+    d.children[2].textContent = fmt(e);
+    if(mine && e.name === mine) d.style.color = "var(--accent)", d.style.fontWeight = "600";
+    box.appendChild(d);
+  });
+}
+async function loadBoards(){
+  const g = document.getElementById("globalboard"), dd = document.getElementById("dailyboard");
+  const joinBox = document.getElementById("joinbox"), boards = document.getElementById("boards");
+  if(!S.online){
+    joinBox.style.display = "block"; boards.style.display = "none"; return;
+  }
+  joinBox.style.display = "none"; boards.style.display = "block";
+  g.innerHTML = "<div><span>Töltés…</span></div>";
+  dd.innerHTML = "";
+  try{
+    const [top, dayRows] = await Promise.all([
+      sbCall("top_scores", {p_limit: 20}),
+      sbCall("daily_top", {p_date: today(), p_limit: 20})
+    ]);
+    const mine = (S.name||"").trim();
+    boardRows(g, top, e => e.xp + " XP · " + e.mastered + " kérdés · 🔥" + e.best_combo, mine);
+    boardRows(dd, dayRows, e => e.daily_score + "/10", mine);
+  }catch(e){
+    g.innerHTML = "<div><span>Nem sikerült betölteni – net nélkül a toplista nem frissül.</span></div>";
+  }
+}
+async function joinBoard(){
+  const nm = (S.name||"").trim();
+  if(!nm){
+    const ni = document.getElementById("nameinput");
+    document.getElementById("joinhint").textContent = "Előbb írd be a neved lent a Beállításoknál.";
+    if(ni) ni.scrollIntoView({block:"center"});
+    return;
+  }
+  S.online = 1; save();
+  const sw = document.getElementById("sw-online"); if(sw) sw.setAttribute("aria-pressed", true);
+  await pushScore();
+  loadBoards();
+}
+
 /* ---------- verseny, boss, easter eggek ---------- */
 const QTIME_BOSS = 18;
 let roundMode = "normal", ghostData = null, bossLec = null, lastPool = [], pendingChallenge = null;
@@ -660,6 +767,7 @@ function boot(){
   document.getElementById("sw-vibe").setAttribute("aria-pressed", !!S.vibe);
   document.getElementById("sw-timer").setAttribute("aria-pressed", !!S.timer);
   document.getElementById("sw-music").setAttribute("aria-pressed", !!S.music);
+  document.getElementById("sw-online").setAttribute("aria-pressed", !!S.online);
   document.getElementById("goalval").textContent = S.goal;
   pendingChallenge = readChallenge();
   const ni = document.getElementById("nameinput");
@@ -667,6 +775,7 @@ function boot(){
   ni.addEventListener("input", ()=>{ S.name = ni.value.slice(0,14); save(); });
   applyNight();
   refresh();
+  loadBoards();
 }
 fetch("quiz.json").then(r=>r.json()).then(d=>{ Q = d.questions; LEC = d.lectures; boot(); })
  .catch(()=>{ document.querySelector("#home h1").insertAdjacentHTML("afterend",
@@ -702,7 +811,10 @@ function tog(id, key){
     if(key==="sound" && S.sound) beep(true);
   });
 }
-tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer"); tog("sw-music","music");
+tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer"); tog("sw-music","music"); tog("sw-online","online");
+document.getElementById("sw-online").addEventListener("click", ()=>{ if(S.online) pushScore(); loadBoards(); });
+document.getElementById("joinbtn").addEventListener("click", joinBoard);
+document.getElementById("refreshboard").addEventListener("click", loadBoards);
 document.getElementById("sw-music").addEventListener("click", ()=>{
   if(S.music){ if(document.getElementById("quiz").style.display!=="none") Music.start(); }
   else Music.stop();
@@ -1051,7 +1163,7 @@ document.getElementById("markbtn").addEventListener("click", ()=>{
   mb.setAttribute("aria-pressed", !!r.mark);
   mb.textContent = r.mark ? "★ Megjelölve" : "☆ Megjelöl";
 });
-document.getElementById("quit").addEventListener("click", ()=>{ refresh(); show("home"); });
+document.getElementById("quit").addEventListener("click", ()=>{ refresh(); loadBoards(); show("home"); });
 document.getElementById("mutebtn").addEventListener("click", e=>{
   S.music = S.music ? 0 : 1; save();
   e.currentTarget.textContent = S.music ? "🔊" : "🔇";
@@ -1150,7 +1262,9 @@ function finish(){
     ? "📋 Eredmény másolása"
     : (roundMode === "challenge" ? "⚔️ Vissza-kihívás linkje" : "⚔️ Kihívom valakivel");
   document.getElementById("linkbox").style.display = "none";
-  save(); refresh(); show("result");
+  save();
+  if(roundMode === "daily") pushScore(today(), sOK); else pushScore();
+  refresh(); show("result");
   if(pct >= 80 || fresh.length || dc === S.goal) setTimeout(confetti, 180);
 }
 document.getElementById("challenge").addEventListener("click", async ()=>{
@@ -1168,7 +1282,7 @@ document.getElementById("challenge").addEventListener("click", async ()=>{
 document.getElementById("again").addEventListener("click", ()=>document.getElementById("start").click());
 document.getElementById("tohome").addEventListener("click", ()=>{
   if(roundMode === "challenge"){ pendingChallenge = null; try{ history.replaceState(null,"",location.pathname); }catch(e){} }
-  refresh(); show("home");
+  refresh(); loadBoards(); show("home");
 });
 document.getElementById("retryBad").addEventListener("click", ()=>{
   startRound(sBad.map(n=>Q.find(x=>x.n===n)), "normal");
