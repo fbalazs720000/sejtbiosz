@@ -92,6 +92,49 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 .badge.got{border-color:var(--gold);background:var(--warn-bg);color:var(--fg);font-weight:600}
 .badge.got div{filter:none;opacity:1}
 
+
+/* éjszakai műszak */
+body.night{
+  --bg:#07080f; --card:#10121f; --fg:#e9e6ff; --muted:#8a86b8; --line:#232542;
+  --accent:#b14bff; --accent-soft:#2a1140;
+  --ok:#30f2a6; --ok-bg:#0c2f26; --bad:#ff5d8f; --bad-bg:#330f1d;
+  --warn:#ffd166; --warn-bg:#332a10; --gold:#ffd166;
+}
+body.night .xpbar i{background:linear-gradient(90deg,#b14bff,#30f2a6)}
+body.night h1::after{content:" 🦉"}
+
+/* kritikus találat */
+.crit{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
+  font-size:30px;font-weight:900;color:var(--gold);text-shadow:0 0 18px var(--gold);
+  animation:critpop .9s forwards;pointer-events:none;z-index:4;white-space:nowrap}
+@keyframes critpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-8deg)}
+  30%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(3deg)}
+  100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+.qcard.critflash{box-shadow:0 0 0 3px var(--gold), 0 0 32px -6px var(--gold)}
+
+/* kihívás / napi / boss kártyák */
+.cta{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:13px;margin-bottom:12px}
+.cta b{display:block;font-size:15px;margin-bottom:3px}
+.cta p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.cta .bigbtn{padding:12px;font-size:15px}
+.bossrow{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13.5px}
+.bossrow span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bossbtn{border:1px solid var(--gold);color:var(--gold);background:transparent;border-radius:999px;
+  padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.bossbtn[disabled]{opacity:.35;border-color:var(--line);color:var(--muted);cursor:default}
+.ghost{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
+  border:1px dashed var(--line);border-radius:999px;padding:3px 9px;margin-bottom:8px}
+.hof div{display:flex;gap:8px;font-size:13px;padding:7px 0;border-top:1px solid var(--line)}
+.hof div:first-child{border-top:0}
+.hof b{flex:0 0 22px;color:var(--muted);font-weight:600}
+.hof span:nth-child(2){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hof em{font-style:normal;color:var(--muted);font-size:11.5px}
+.joke{margin-top:9px;font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding-left:9px}
+.namein{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:9px;
+  padding:7px 10px;font-size:14px;width:130px;text-align:right}
+.linkbox{width:100%;border:1px solid var(--line);background:var(--card);color:var(--fg);
+  border-radius:9px;padding:9px;font-size:12px;margin-top:9px;display:none}
+
 /* ---------- quiz ---------- */
 #quiz{display:none;min-height:100vh;min-height:100dvh;flex-direction:column}
 .top{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px}
@@ -179,6 +222,10 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
     </div>
   </div>
 
+  <div id="challengecard"></div>
+
+  <div class="cta" id="dailycard"></div>
+
   <div class="panel">
     <h2>Elsajátítva <span id="mastertot" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
     <div id="mastery"></div>
@@ -215,6 +262,16 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
     <p class="hint" id="diag" style="margin-top:10px"></p>
   </div>
 
+  <div class="panel" id="bosspanel" style="margin-top:12px">
+    <h2>Boss-körök <span style="float:right;text-transform:none;letter-spacing:0;font-weight:400">10 kérdés · 18 mp · dupla XP</span></h2>
+    <div id="bosslist"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Dicsőségtábla <span id="hofhint" style="float:right;text-transform:none;letter-spacing:0;font-weight:400"></span></h2>
+    <div class="hof" id="hof"></div>
+  </div>
+
   <div class="panel" style="margin-top:12px">
     <h2>Jelvények <span id="badgecount" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
     <div class="badges" id="badges"></div>
@@ -222,6 +279,7 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 
   <div class="panel">
     <h2>Beállítás</h2>
+    <div class="togrow"><span>Neved (dicsőségtábla, kihívás)</span><input class="namein" id="nameinput" maxlength="14" placeholder="Te"></div>
     <div class="togrow"><span>Zene</span><button class="sw" id="sw-music" aria-pressed="true"><i></i></button></div>
     <div class="togrow"><span>Hang (helyes/hibás jelzés)</span><button class="sw" id="sw-sound" aria-pressed="false"><i></i></button></div>
     <div class="togrow"><span>Rezgés</span><button class="sw" id="sw-vibe" aria-pressed="true"><i></i></button></div>
@@ -248,6 +306,7 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
     <div class="timer" id="timerwrap"><i id="timerbar"></i></div>
   </div>
   <div class="qcard" id="qcard">
+    <div id="ghostbar"></div>
     <div class="meta" id="meta"></div>
     <p class="qtext" id="qtext"></p>
     <div id="opts"></div>
@@ -271,7 +330,10 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
     <div class="rstat"><b id="r-streak">0</b><span>leghosszabb sorozat</span></div>
     <div class="rstat"><b id="r-master">0</b><span>új elsajátított</span></div>
   </div>
+  <div id="r-verdict"></div>
   <div id="r-badges"></div>
+  <button class="bigbtn ghostbtn" id="challenge" style="background:transparent;color:var(--accent);border:1px solid var(--accent);font-size:15px;padding:12px;margin-top:12px">⚔️ Kihívom valakivel</button>
+  <input class="linkbox" id="linkbox" readonly>
   <div id="r-goal" class="hint"></div>
   <button class="bigbtn" id="again" style="margin-top:12px">Újabb kör</button>
   <button class="bigbtn ghost" id="retryBad" style="margin-top:10px">A most elrontottak újra</button>
@@ -287,7 +349,8 @@ const MASTER = 3;              // ennyi egymás utáni helyes = elsajátítva
 const QTIME = 25;              // másodperc
 
 /* ---------- store ---------- */
-let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1};
+let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1,
+         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0};
 try{
   const raw = JSON.parse(localStorage.getItem(KEY) || "null");
   if(raw) S = Object.assign(S, raw);
@@ -320,6 +383,14 @@ const BADGES = [
   {id:"d7",     icon:"🏆", name:"7 napos széria",test:()=>dayStreak()>=7},
   {id:"fix20",  icon:"🛠️", name:"20 hiba javítva",test:()=>fixedCount()>=20},
   {id:"lvl5",   icon:"🚀", name:"5. szint",      test:()=>levelOf(S.xp)>=5},
+  {id:"crit",   icon:"🎯", name:"Kritikus találat", test:()=>(S.crits||0)>=1},
+  {id:"crit10", icon:"☄️", name:"10 kritikus",   test:()=>(S.crits||0)>=10},
+  {id:"night",  icon:"🦉", name:"Éjszakai műszak", test:()=>!!S.nightOwl},
+  {id:"boss1",  icon:"⚔️", name:"Első boss",     test:()=>(S.boss||[]).length>=1},
+  {id:"boss5",  icon:"🛡️", name:"5 boss legyőzve", test:()=>(S.boss||[]).length>=5},
+  {id:"perfect",icon:"🎖️", name:"Hibátlan kör",  test:()=>!!S.perfect},
+  {id:"duel",   icon:"🤜", name:"Párbaj",        test:()=>(S.duels||0)>=1},
+  {id:"daily5", icon:"📆", name:"5 napi kihívás", test:()=>Object.keys(S.daily||{}).length>=5},
 ];
 function answeredTotal(){ let t=0; for(const k in S.q) t += S.q[k].ok + S.q[k].bad; return t; }
 function masterCount(){ let t=0; for(const k in S.q) if(S.q[k].run>=MASTER) t++; return t; }
@@ -441,6 +512,96 @@ const Music = (function(){
   };
 })();
 
+
+/* ---------- verseny, boss, easter eggek ---------- */
+const QTIME_BOSS = 18;
+let roundMode = "normal", ghostData = null, bossLec = null, lastPool = [], pendingChallenge = null;
+
+const JOKES = [
+  "A mitokondrium a sejt erőműve – ezt a mondatot a biológia sosem fogja kinőni.",
+  "A riboszóma az egyetlen gyár, ami saját magát is összerakja.",
+  "A hiszton nélkül a DNS-ed kétméteres spagetti lenne egy mikrométeres tálban.",
+  "A Golgi az a részleg, ahol mindent újracímkéznek, mielőtt kimenne a raktárból.",
+  "A lizoszóma a sejt kukásautója, csak savasabb.",
+  "A tight junction a sejtek között az, ami a gumikesztyű a kézen.",
+  "Az aktin folyton épül és bomlik – mint a félkész házid a határidő előtt.",
+  "A sejtmagban a DNS, a citoplazmában a pánik.",
+  "A kinezin naponta annyit lépked benned, mint te egy hónap alatt.",
+  "Az intron az a rész, amit a szerkesztő kivág – de előbb le kell írni.",
+  "A telomer a kromoszóma cipőfűzővége. Ha elkopik, elszabadul minden.",
+  "A kloroplasztisz is csak egy baktérium, aki jól beházasodott.",
+  "A proteoszóma a sejt papírzúzója.",
+  "A Barr-test nem rejtély: egy X, ami úgy döntött, ma nem dolgozik.",
+  "A sejtfal nem börtön, csak egy nagyon határozott kerítés.",
+  "A dinein hátrafelé megy, és büszke rá.",
+  "A szkrambláz ATP nélkül kever – a sejt egyetlen ingyen szolgáltatása.",
+  "Az operon a baktérium playlistje: egy gomb, több szám."
+];
+
+/* magvas véletlen – ugyanaz a nap, ugyanaz a kérdéssor mindenkinél */
+function hashStr(s){ let x=2166136261; for(let i=0;i<s.length;i++){ x^=s.charCodeAt(i); x=Math.imul(x,16777619);} return x>>>0; }
+function rngFrom(seed){ let x=seed||1; return function(){ x^=x<<13; x>>>=0; x^=x>>>17; x^=x<<5; x>>>=0; return x/4294967296; }; }
+function pickSeeded(list, n, seed){
+  const r = rngFrom(seed), a = list.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a.slice(0, n);
+}
+function dailySet(){ return pickSeeded(Q, 10, hashStr("napi-" + today())); }
+
+/* kihívás link kódolás */
+function enc(o){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(o))))
+         .replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function dec(s){
+  try{ return JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,"+").replace(/_/g,"/"))))); }
+  catch(e){ return null; }
+}
+function challengeURL(){
+  const p = { n: (S.name||"Egy névtelen sejt").slice(0,14), s: sOK, t: lastPool.filter(q=>q.c).length,
+              q: lastPool.map(q=>q.n) };
+  return location.origin + location.pathname + "#c" + enc(p);
+}
+function readChallenge(){
+  const hsh = location.hash || "";
+  if(hsh.length < 3 || hsh[1] !== "c") return null;
+  const p = dec(hsh.slice(2));
+  if(!p || !Array.isArray(p.q) || !p.q.length) return null;
+  return p;
+}
+
+function myName(){ return (S.name && S.name.trim()) || "Te"; }
+function curQTime(){ return roundMode === "boss" ? QTIME_BOSS : QTIME; }
+
+/* dicsőségtábla */
+function hofPush(pct, ok, total){
+  S.hof = S.hof || [];
+  S.hof.push({n: myName(), p: pct, o: ok, t: total, m: roundMode, d: today()});
+  S.hof.sort((a,b)=> b.p - a.p || b.t - a.t);
+  S.hof = S.hof.slice(0, 12);
+}
+
+/* kör indítása */
+function startRound(list, m, opts){
+  opts = opts || {};
+  pool = list; lastPool = list.slice();
+  idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0; sAnswered = 0;
+  roundMode = m; ghostData = opts.ghost || null; bossLec = opts.lec || null;
+  show("quiz"); render();
+  if(S.music) Music.start();
+}
+
+/* boss elérhetőség: az előadás legalább felét elsajátítottad */
+function bossReady(l){
+  const qs = Q.filter(q=>q.l==l);
+  return qs.length && qs.filter(q=>mastered(q.n)).length >= Math.ceil(qs.length/2);
+}
+function bossWon(l){ return (S.boss||[]).indexOf(String(l)) >= 0; }
+
+/* éjszakai műszak */
+function isNight(){ const hr = new Date().getHours(); return hr >= 0 && hr < 4; }
+function applyNight(){ document.body.classList.toggle("night", isNight()); }
+
 /* ---------- fx ---------- */
 let actx = null;
 function beep(ok){
@@ -500,6 +661,11 @@ function boot(){
   document.getElementById("sw-timer").setAttribute("aria-pressed", !!S.timer);
   document.getElementById("sw-music").setAttribute("aria-pressed", !!S.music);
   document.getElementById("goalval").textContent = S.goal;
+  pendingChallenge = readChallenge();
+  const ni = document.getElementById("nameinput");
+  ni.value = S.name || "";
+  ni.addEventListener("input", ()=>{ S.name = ni.value.slice(0,14); save(); });
+  applyNight();
   refresh();
 }
 fetch("quiz.json").then(r=>r.json()).then(d=>{ Q = d.questions; LEC = d.lectures; boot(); })
@@ -622,6 +788,81 @@ function refresh(){
   });
   document.getElementById("badgecount").textContent = S.badges.length + "/" + BADGES.length;
 
+  applyNight();
+  const ni = document.getElementById("nameinput");
+  if(ni && document.activeElement !== ni) ni.value = S.name || "";
+
+  // napi kihívás
+  const dres = (S.daily||{})[today()];
+  const dcard = document.getElementById("dailycard");
+  dcard.innerHTML = "";
+  const db = document.createElement("b");
+  db.textContent = "📆 Napi kihívás";
+  const dp = document.createElement("p");
+  dp.textContent = dres
+    ? ("Ma már megvolt: " + dres.o + "/" + dres.t + ". Holnap új 10 kérdés jön.")
+    : "10 kérdés az egész anyagból – ma mindenki pontosan ezt a tízet kapja. Jó alap az összehasonlításhoz.";
+  const dbtn = document.createElement("button");
+  dbtn.className = "bigbtn";
+  dbtn.textContent = dres ? "Újrajátszom (nem számít bele)" : "Mehet a mai 10";
+  dbtn.addEventListener("click", ()=>startRound(dailySet(), "daily"));
+  dcard.appendChild(db); dcard.appendChild(dp); dcard.appendChild(dbtn);
+
+  // beérkezett kihívás
+  const cc = document.getElementById("challengecard");
+  cc.innerHTML = "";
+  if(pendingChallenge){
+    const chList = pendingChallenge.q.map(n2=>Q.find(x=>x.n===n2)).filter(Boolean);
+    if(chList.length){
+      const w = document.createElement("div"); w.className = "cta";
+      const b = document.createElement("b"); b.textContent = "⚔️ " + pendingChallenge.n + " kihívott!";
+      const p = document.createElement("p");
+      p.textContent = "Ugyanez a " + chList.length + " kérdés, ugyanebben a sorrendben. Az ő eredménye: "
+                      + pendingChallenge.s + "/" + pendingChallenge.t + ". Ezt kell megverned.";
+      const go = document.createElement("button"); go.className = "bigbtn"; go.textContent = "Elfogadom";
+      go.addEventListener("click", ()=>startRound(chList, "challenge", {ghost: pendingChallenge}));
+      w.appendChild(b); w.appendChild(p); w.appendChild(go); cc.appendChild(w);
+    }
+  }
+
+  // boss-körök
+  const bl = document.getElementById("bosslist"); bl.innerHTML = "";
+  Object.keys(LEC).forEach(l=>{
+    const qs = Q.filter(q=>q.l==l), m = qs.filter(q=>mastered(q.n)).length;
+    const ready = bossReady(l), won = bossWon(l);
+    const row = document.createElement("div"); row.className = "bossrow";
+    const nm = document.createElement("span");
+    nm.textContent = (won ? "🏆 " : "") + LEC[l];
+    const bt = document.createElement("button");
+    bt.className = "bossbtn";
+    bt.textContent = ready ? (won ? "Újra" : "Harc") : Math.ceil(qs.length/2) - m + " kell";
+    bt.disabled = !ready;
+    if(ready) bt.addEventListener("click", ()=>{
+      const qq = Q.filter(q=>q.l==l);
+      startRound(pickSeeded(qq, Math.min(10, qq.length), (Math.random()*1e9)|0), "boss", {lec: l});
+    });
+    row.appendChild(nm); row.appendChild(bt); bl.appendChild(row);
+  });
+
+  // dicsőségtábla
+  const hof = document.getElementById("hof"); hof.innerHTML = "";
+  const hofList = (S.hof||[]);
+  document.getElementById("hofhint").textContent = hofList.length ? "" : "még üres";
+  if(!hofList.length){
+    const d = document.createElement("div");
+    d.innerHTML = "<span>Játssz egy kört, és felkerülsz. Add tovább a telefont, írd át a neved a beállításoknál, és mehet a páros verseny.</span>";
+    hof.appendChild(d);
+  }
+  hofList.slice(0,10).forEach((e,i)=>{
+    const d = document.createElement("div");
+    const medal = ["🥇","🥈","🥉"][i] || (i+1)+".";
+    d.innerHTML = "<b></b><span></span><em></em>";
+    d.children[0].textContent = medal;
+    d.children[1].textContent = e.n;
+    d.children[2].textContent = e.p + "% · " + e.o + "/" + e.t + " · " + (e.m==="boss"?"boss":e.m==="daily"?"napi":e.m==="challenge"?"párbaj":"gyakorlás");
+    hof.appendChild(d);
+  });
+
   const n = filtered().length, btn = document.getElementById("start");
   btn.disabled = n===0;
   btn.textContent = n===0 ? (mode==="smart" ? "Mindent elsajátítottál 🎉" : "Nincs ilyen kérdés")
@@ -635,11 +876,7 @@ document.getElementById("reset").addEventListener("click", ()=>{
   }
 });
 document.getElementById("start").addEventListener("click", ()=>{
-  const f = filtered();
-  pool = pick(f, len || 0);
-  idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0; sAnswered = 0;
-  show("quiz"); render();
-  if(S.music) Music.start();
+  startRound(pick(filtered(), len || 0), "normal");
 });
 function show(w){
   document.getElementById("home").style.display   = w==="home" ? "block" : "none";
@@ -656,11 +893,12 @@ function startTimer(){
   const wrap = document.getElementById("timerwrap"), bar = document.getElementById("timerbar");
   wrap.style.display = S.timer ? "" : "none";
   if(!S.timer) return;
-  tLeft = QTIME; wrap.classList.remove("low"); bar.style.width = "100%"; Music.tension(false);
+  const QT = curQTime();
+  tLeft = QT; wrap.classList.remove("low"); bar.style.width = "100%"; Music.tension(false);
   tHandle = setInterval(()=>{
     tLeft -= .1;
-    bar.style.width = Math.max(0, 100*tLeft/QTIME) + "%";
-    if(tLeft <= QTIME*0.3){ wrap.classList.add("low"); Music.tension(true); }
+    bar.style.width = Math.max(0, 100*tLeft/QT) + "%";
+    if(tLeft <= QT*0.3){ wrap.classList.add("low"); Music.tension(true); }
     if(tLeft <= 0) stopTimer();
   }, 100);
 }
@@ -674,6 +912,15 @@ function render(){
   document.getElementById("combo").textContent = "🔥"+sStreak;
   document.getElementById("tbar").style.width = (100*idx/pool.length)+"%";
 
+  const gb = document.getElementById("ghostbar");
+  gb.innerHTML = "";
+  if(ghostData || roundMode !== "normal"){
+    const d = document.createElement("div"); d.className = "ghost";
+    if(ghostData) d.textContent = "👤 " + ghostData.n + ": " + ghostData.s + "/" + ghostData.t + "  ·  te: " + sOK;
+    else if(roundMode === "boss") d.textContent = "⚔️ BOSS · " + (LEC[bossLec]||"") + " · dupla XP, magyarázat a végén";
+    else if(roundMode === "daily") d.textContent = "📆 Napi kihívás · mindenkinél ugyanez a 10 kérdés";
+    gb.appendChild(d);
+  }
   const meta = document.getElementById("meta"); meta.innerHTML = "";
   const t1 = document.createElement("span");
   t1.className = "tag " + (q.ask==="igaz" ? "true":"false");
@@ -734,9 +981,19 @@ function answer(i){
       r.ok++; r.run = (r.run||0) + 1; sOK++; sStreak++;
       sBestStreak = Math.max(sBestStreak, sStreak);
       if(sStreak > S.best) S.best = sStreak;
-      const speed = (S.timer && tLeft > 0) ? Math.round(10 * tLeft / QTIME) : 0;
+      const speed = (S.timer && tLeft > 0) ? Math.round(10 * tLeft / curQTime()) : 0;
       gained = 10 + speed + Math.min(10, sStreak - 1) * 2;
       if(r.run === MASTER){ gained += 25; sMaster++; }
+      if(roundMode === "boss") gained *= 2;
+      const crit = Math.random() < 0.08;
+      if(crit){
+        gained *= 2; S.crits = (S.crits||0) + 1;
+        const c = document.createElement("div"); c.className = "crit"; c.textContent = "KRITIKUS ×2";
+        const card = document.getElementById("qcard");
+        card.appendChild(c); card.classList.add("critflash");
+        setTimeout(()=>{ c.remove(); card.classList.remove("critflash"); }, 900);
+        buzz([12,40,12]);
+      }
       S.xp += gained; sXP += gained;
       beep(true); buzz(18);
       const p = document.createElement("div");
@@ -763,14 +1020,24 @@ function answer(i){
                            : ("Nem jó. A helyes: " + q.c + ")");
   e.innerHTML = "<b></b><span></span>";
   e.firstChild.textContent = head;
-  e.lastChild.textContent = q.e;
+  e.lastChild.textContent = (roundMode === "boss") ? "" : q.e;
+  if(roundMode !== "boss" && Math.random() < 0.12){
+    const j = document.createElement("div"); j.className = "joke";
+    j.textContent = JOKES[(Math.random()*JOKES.length)|0];
+    e.appendChild(j);
+  }
 
   [...document.getElementById("mdots").children].forEach((d,k)=>{ d.className = (r.run > k) ? "on" : ""; });
+  if(ghostData){
+    const g = document.querySelector("#ghostbar .ghost");
+    if(g) g.textContent = "👤 " + ghostData.n + ": " + ghostData.s + "/" + ghostData.t + "  ·  te: " + sOK;
+  }
   document.getElementById("tbar").style.width = (100*(idx+1)/pool.length)+"%";
   const nx = document.getElementById("next");
   nx.style.display = "";
   nx.textContent = (idx+1 < pool.length) ? "Következő →" : "Eredmény →";
   try{ nx.scrollIntoView({block:"nearest"}); }catch(err){}
+  if(roundMode === "boss") setTimeout(()=>{ if(answered) nx.click(); }, 1100);
 }
 
 document.getElementById("next").addEventListener("click", ()=>{
@@ -816,6 +1083,44 @@ function finish(){
   document.getElementById("r-streak").textContent = sBestStreak;
   document.getElementById("r-master").textContent = sMaster;
 
+  const perfect = scored >= 10 && sOK === scored;
+  if(perfect){ S.xp += 100; sXP += 100; S.perfect = 1; }
+  if(isNight()) S.nightOwl = 1;
+  hofPush(pct, sOK, scored);
+
+  const vd = document.getElementById("r-verdict");
+  vd.innerHTML = "";
+  function verdict(txt, cls){
+    const d = document.createElement("div");
+    d.className = "newbadge";
+    if(cls === "bad") d.style.background = "var(--bad-bg)", d.style.borderColor = "var(--bad)";
+    if(cls === "ok")  d.style.background = "var(--ok-bg)",  d.style.borderColor = "var(--ok)";
+    d.textContent = txt; vd.appendChild(d);
+  }
+  if(roundMode === "challenge" && ghostData){
+    S.duels = (S.duels||0) + 1;
+    const mine = sOK, his = ghostData.s;
+    if(mine > his) verdict("🏆 Megverted " + ghostData.n + "-t: " + mine + " – " + his, "ok");
+    else if(mine < his) verdict("😤 " + ghostData.n + " nyert: " + his + " – " + mine + ". Vissza!", "bad");
+    else verdict("🤝 Döntetlen " + ghostData.n + "-val: " + mine + " – " + his);
+  }
+  if(roundMode === "boss"){
+    const won = sOK >= 8;
+    if(won){
+      S.boss = S.boss || [];
+      if(S.boss.indexOf(String(bossLec)) < 0) S.boss.push(String(bossLec));
+      verdict("⚔️ Boss legyőzve: " + (LEC[bossLec]||"") + " (" + sOK + "/10)", "ok");
+    } else {
+      verdict("⚔️ A boss állva maradt (" + sOK + "/10, 8 kell). Újra!", "bad");
+    }
+  }
+  if(roundMode === "daily"){
+    S.daily = S.daily || {};
+    S.daily[today()] = {o: sOK, t: scored};
+    verdict("📆 Mai kihívás kész: " + sOK + "/" + scored + " – másold ki és küldd el a többieknek!");
+  }
+  if(perfect) verdict("🎖️ Hibátlan kör! +100 XP bónusz", "ok");
+
   const fresh = checkBadges();
   const bz = document.getElementById("r-badges"); bz.innerHTML = "";
   if(fresh.length){
@@ -840,17 +1145,34 @@ function finish(){
     });
   }
   document.getElementById("retryBad").style.display = sBad.length ? "" : "none";
+  const ch = document.getElementById("challenge");
+  ch.textContent = roundMode === "daily"
+    ? "📋 Eredmény másolása"
+    : (roundMode === "challenge" ? "⚔️ Vissza-kihívás linkje" : "⚔️ Kihívom valakivel");
+  document.getElementById("linkbox").style.display = "none";
   save(); refresh(); show("result");
   if(pct >= 80 || fresh.length || dc === S.goal) setTimeout(confetti, 180);
 }
-document.getElementById("again").addEventListener("click", ()=>document.getElementById("start").click());
-document.getElementById("tohome").addEventListener("click", ()=>show("home"));
-document.getElementById("retryBad").addEventListener("click", ()=>{
-  pool = sBad.map(n=>Q.find(x=>x.n===n));
-  idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0;
-  show("quiz"); render(); if(S.music) Music.start();
+document.getElementById("challenge").addEventListener("click", async ()=>{
+  const scored = lastPool.filter(q=>q.c).length;
+  const txt = roundMode === "daily"
+    ? ("Sejtbio napi kihívás " + today() + ": " + sOK + "/" + scored + " 🧬 " + location.origin + location.pathname)
+    : challengeURL();
+  const box = document.getElementById("linkbox");
+  box.value = txt; box.style.display = "block";
+  let okCopy = false;
+  try{ await navigator.clipboard.writeText(txt); okCopy = true; }catch(e){}
+  if(!okCopy){ try{ box.focus(); box.setSelectionRange(0, txt.length); }catch(e){} }
+  document.getElementById("challenge").textContent = okCopy ? "✅ Kimásolva – küldd el!" : "Jelöld ki és másold ki ↓";
 });
-
+document.getElementById("again").addEventListener("click", ()=>document.getElementById("start").click());
+document.getElementById("tohome").addEventListener("click", ()=>{
+  if(roundMode === "challenge"){ pendingChallenge = null; try{ history.replaceState(null,"",location.pathname); }catch(e){} }
+  refresh(); show("home");
+});
+document.getElementById("retryBad").addEventListener("click", ()=>{
+  startRound(sBad.map(n=>Q.find(x=>x.n===n)), "normal");
+});
 /* ---------- PWA ---------- */
 let swOK = false, promptEvt = null;
 if("serviceWorker" in navigator && location.protocol === "https:"){
