@@ -77,6 +77,17 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 .bigbtn[disabled]{opacity:.45}
 .ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-size:14px;font-weight:500;padding:11px}
 
+
+/* hír-popup */
+.newsback{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;display:none;align-items:center;justify-content:center;padding:18px}
+.newsback.on{display:flex}
+.news{position:relative;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:18px;max-width:420px;width:100%;padding:22px 20px 18px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.news h3{margin:0 0 6px;font-size:19px}
+.news .nx{position:absolute;top:8px;right:10px;border:0;background:transparent;color:var(--muted);font-size:26px;line-height:1;cursor:pointer;padding:6px 10px}
+.news ul{margin:10px 0 14px;padding-left:20px;font-size:14.5px;line-height:1.5}
+.news li{margin-bottom:6px}
+.news .row{display:flex;gap:8px;margin-top:12px}
+
 /* mastery list */
 .mrow{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13px}
 .mrow span:first-child{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -383,6 +394,25 @@ body.night h1::after{content:" 🦉"}
   <button class="bigbtn ghost" id="retryBad" style="margin-top:10px">A most elrontottak újra</button>
   <button class="bigbtn ghost" id="tohome" style="margin-top:10px">Vissza a főoldalra</button>
   <div class="missed" id="r-missed"></div>
+</div>
+
+
+<div class="newsback" id="news" role="dialog" aria-modal="true" aria-labelledby="news-t">
+  <div class="news">
+    <button class="nx" id="news-x" aria-label="Bezárás">×</button>
+    <h3 id="news-t">🆕 Frissítés érkezett: online rész!</h3>
+    <ul>
+      <li><b>Online toplista:</b> mostantól mindenki együtt versenyez, a ranglista automatikusan frissül.</li>
+      <li><b>Csinálj fiókot:</b> névvel és jelszóval, így a telefonon és a gépen ugyanaz a haladás.</li>
+      <li><b>Játssz online:</b> napi kihívás, kihívás-linkek, boss-körök, és megjelensz a toplistán.</li>
+      <li><b>Adj magadnak nevet</b> – ezen a néven látnak a ranglistán:</li>
+    </ul>
+    <input class="namein" id="news-name" maxlength="14" placeholder="a neved (max. 14 karakter)" style="width:100%;text-align:left">
+    <div class="row">
+      <button class="bigbtn" id="news-go" style="flex:1;padding:12px;font-size:15px">Fiók készítése</button>
+      <button class="bigbtn ghost" id="news-later" style="flex:1;padding:12px;font-size:15px">Később</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -949,6 +979,33 @@ let pool = [], idx = 0, answered = false;
 let sStreak = 0, sBestStreak = 0, sOK = 0, sXP = 0, sMaster = 0, sBad = [], sAnswered = 0;
 let tHandle = null, tLeft = QTIME;
 
+
+/* ---------- hír-popup ---------- */
+(function(){
+  const NK = "sejtbio-news-online1";
+  const box = document.getElementById("news");
+  function seen(){ try{ return !!localStorage.getItem(NK); }catch(e){ return false; } }
+  function close(){ box.classList.remove("on"); try{ localStorage.setItem(NK,"1"); }catch(e){} }
+  const nn = document.getElementById("news-name");
+  nn.addEventListener("input", ()=>{
+    S.name = nn.value.slice(0,14); save();
+    const ni = document.getElementById("nameinput"); if(ni) ni.value = S.name;
+  });
+  document.getElementById("news-x").addEventListener("click", close);
+  document.getElementById("news-later").addEventListener("click", close);
+  box.addEventListener("click", e=>{ if(e.target===box) close(); });
+  document.getElementById("news-go").addEventListener("click", ()=>{
+    close();
+    const p = document.getElementById("authuser");
+    if(p){ p.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(()=>{ try{p.focus();}catch(e){} }, 400); }
+  });
+  window.showNews = function(){
+    if(seen() || (typeof loggedIn==="function" && loggedIn())) return;
+    nn.value = S.name || "";
+    box.classList.add("on");
+  };
+})();
+
 const lecBox = document.getElementById("lectures");
 function boot(){
   const allBtn = document.createElement("button");
@@ -978,6 +1035,7 @@ function boot(){
   refresh();
   loadBoards();
   if(loggedIn()) syncNow();
+  showNews();
 }
 fetch("quiz.json").then(r=>r.json()).then(d=>{ Q = d.questions; LEC = d.lectures; boot(); })
  .catch(()=>{ document.querySelector("#home h1").insertAdjacentHTML("afterend",
