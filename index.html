@@ -86,6 +86,7 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 .news .nx{position:absolute;top:8px;right:10px;border:0;background:transparent;color:var(--muted);font-size:26px;line-height:1;cursor:pointer;padding:6px 10px}
 .news ul{margin:10px 0 14px;padding-left:20px;font-size:14.5px;line-height:1.5}
 .news li{margin-bottom:6px}
+.news .bigbtn[disabled]{opacity:.45;cursor:default}
 .news .row{display:flex;gap:8px;margin-top:12px}
 
 /* mastery list */
@@ -401,7 +402,8 @@ body.night h1::after{content:" 🦉"}
   <div class="news">
     <button class="nx" id="news-x" aria-label="Bezárás">×</button>
     <h3 id="news-t">🆕 Frissítés érkezett: online rész!</h3>
-    <ul>
+    <p id="news-lead" style="margin:6px 0 10px;font-size:14.5px;line-height:1.5"></p>
+    <ul id="news-list">
       <li><b>Online toplista:</b> mostantól mindenki együtt versenyez, a ranglista automatikusan frissül.</li>
       <li><b>Csinálj fiókot:</b> névvel és jelszóval, így a telefonon és a gépen ugyanaz a haladás.</li>
       <li><b>Játssz online:</b> napi kihívás, kihívás-linkek, boss-körök, és megjelensz a toplistán.</li>
@@ -798,6 +800,7 @@ async function syncNow(){
   await pushProfile();
   await pushScore();
   refresh(); loadBoards(); accountUI();
+  if(window.showNews) showNews();
 }
 
 function authError(e){
@@ -982,26 +985,55 @@ let tHandle = null, tLeft = QTIME;
 
 /* ---------- hír-popup ---------- */
 (function(){
-  const NK = "sejtbio-news-online1";
   const box = document.getElementById("news");
-  function seen(){ try{ return !!localStorage.getItem(NK); }catch(e){ return false; } }
-  function close(){ box.classList.remove("on"); try{ localStorage.setItem(NK,"1"); }catch(e){} }
   const nn = document.getElementById("news-name");
+  const go = document.getElementById("news-go"), later = document.getElementById("news-later");
+  const title = document.getElementById("news-t"), list = document.getElementById("news-list"), lead = document.getElementById("news-lead");
+  let closedNow = false, mode = "full";
+  function isAnon(n){ n = (n||"").trim(); return !n || /^Sejt\d{4}$/.test(n) || n==="Névtelen sejt" || n==="Te" || n==="Névtelen"; }
+  window.isAnonName = isAnon;
+  function close(){ closedNow = true; box.classList.remove("on"); }
+  function sync(){
+    const ok = !isAnon(nn.value);
+    if(mode==="name") go.disabled = !ok;
+  }
   nn.addEventListener("input", ()=>{
     S.name = nn.value.slice(0,14); save();
     const ni = document.getElementById("nameinput"); if(ni) ni.value = S.name;
+    sync();
   });
   document.getElementById("news-x").addEventListener("click", close);
-  document.getElementById("news-later").addEventListener("click", close);
+  later.addEventListener("click", close);
   box.addEventListener("click", e=>{ if(e.target===box) close(); });
-  document.getElementById("news-go").addEventListener("click", ()=>{
+  go.addEventListener("click", async ()=>{
+    if(mode==="name"){
+      if(isAnon(nn.value)) return;
+      close();
+      try{ await pushProfile(); await pushScore(); loadBoards(); }catch(e){}
+      return;
+    }
     close();
     const p = document.getElementById("authuser");
     if(p){ p.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(()=>{ try{p.focus();}catch(e){} }, 400); }
   });
   window.showNews = function(){
-    if(seen() || (typeof loggedIn==="function" && loggedIn())) return;
-    nn.value = S.name || "";
+    if(closedNow) return;
+    const li = (typeof loggedIn==="function") && loggedIn();
+    if(li && !isAnon(S.name)){ box.classList.remove("on"); return; }   // fiók és név is megvan
+    mode = li ? "name" : "full";
+    box.dataset.mode = mode;
+    if(mode==="name"){
+      title.textContent = "✏️ Adj magadnak nevet!";
+      lead.textContent = "Most névtelenként szerepelsz a toplistán. Írd be, hogyan hívjanak – ezen a néven látnak a többiek.";
+      list.style.display = "none"; later.textContent = "Most nem"; go.textContent = "Mentés";
+      nn.value = isAnon(S.name) ? "" : S.name;
+    } else {
+      title.textContent = "🆕 Frissítés érkezett: online rész!";
+      lead.textContent = "";
+      list.style.display = ""; later.textContent = "Később"; go.textContent = "Fiók készítése";
+      nn.value = isAnon(S.name) ? "" : S.name;
+    }
+    go.disabled = (mode==="name");
     box.classList.add("on");
   };
 })();
@@ -1034,8 +1066,7 @@ function boot(){
   accountUI();
   refresh();
   loadBoards();
-  if(loggedIn()) syncNow();
-  showNews();
+  if(loggedIn()) syncNow(); else showNews();
 }
 fetch("quiz.json").then(r=>r.json()).then(d=>{ Q = d.questions; LEC = d.lectures; boot(); })
  .catch(()=>{ document.querySelector("#home h1").insertAdjacentHTML("afterend",
