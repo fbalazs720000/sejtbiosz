@@ -81,8 +81,12 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 .mrow{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:13px}
 .mrow span:first-child{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mbar{flex:0 0 78px;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
-.mbar i{display:block;height:100%;background:var(--ok)}
-.mnum{flex:0 0 42px;text-align:right;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.mbar{position:relative}
+.mbar i{display:block;height:100%;background:var(--ok);position:absolute;left:0;top:0}
+.mbar i.seen{background:var(--accent);opacity:.45}
+.mnum{flex:0 0 88px;text-align:right;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mnum b{color:var(--ok);font-weight:650}
+.mlegend{font-size:11.5px;color:var(--muted);margin:-2px 0 10px}
 .done{color:var(--gold)}
 
 /* badges */
@@ -228,6 +232,7 @@ body.night h1::after{content:" 🦉"}
 
   <div class="panel">
     <h2>Elsajátítva <span id="mastertot" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
+    <div class="mlegend">kék = már válaszoltál rá · zöld szám = elsajátítva (3 jó válasz egymás után)</div>
     <div id="mastery"></div>
   </div>
 
@@ -1084,14 +1089,16 @@ function refresh(){
   const mv = document.getElementById("mastery"); mv.innerHTML = "";
   Object.keys(LEC).forEach(l=>{
     const qs = Q.filter(q=>q.l==l), m = qs.filter(q=>mastered(q.n)).length;
+    const a = qs.filter(q=>{ const r=S.q[q.n]; return r && (r.ok+r.bad)>0; }).length;
     const row = document.createElement("div"); row.className = "mrow";
     const done = m===qs.length && qs.length;
     row.innerHTML = '<span'+(done?' class="done"':'')+'>'+(done?"✓ ":"")+LEC[l]+'</span>'+
-      '<span class="mbar"><i style="width:'+(100*m/qs.length)+'%"></i></span>'+
-      '<span class="mnum">'+m+'/'+qs.length+'</span>';
+      '<span class="mbar"><i class="seen" style="width:'+(100*a/qs.length)+'%"></i><i style="width:'+(100*m/qs.length)+'%"></i></span>'+
+      '<span class="mnum">'+a+'/'+qs.length+' · <b>'+m+'</b></span>';
     mv.appendChild(row);
   });
-  document.getElementById("mastertot").textContent = masterCount() + " / " + Q.length;
+  let seenTot = 0; for(const k in S.q) if((S.q[k].ok + S.q[k].bad) > 0) seenTot++;
+  document.getElementById("mastertot").textContent = seenTot + " látott · " + masterCount() + " kész / " + Q.length;
 
   const bb = document.getElementById("badges"); bb.innerHTML = "";
   BADGES.forEach(b=>{
