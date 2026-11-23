@@ -111,13 +111,92 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 
 /* éjszakai műszak */
 body.night{
-  --bg:#07080f; --card:#10121f; --fg:#e9e6ff; --muted:#8a86b8; --line:#232542;
+  --bg:#07080f; --card:#10121f; --fg:#ece9ff; --muted:#9a96c8; --line:#2a2c52;
   --accent:#b14bff; --accent-soft:#2a1140;
   --ok:#30f2a6; --ok-bg:#0c2f26; --bad:#ff5d8f; --bad-bg:#330f1d;
   --warn:#ffd166; --warn-bg:#332a10; --gold:#ffd166;
+  --ngrad:linear-gradient(90deg,#b14bff,#2bd4ff,#30f2a6,#ff5db1,#b14bff);
 }
-body.night .xpbar i{background:linear-gradient(90deg,#b14bff,#30f2a6)}
-body.night h1::after{content:" 🦉"}
+#nightfx{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;overflow:hidden}
+body.night #nightfx{display:block}
+#nightsky{position:absolute;inset:0;width:100%;height:100%}
+#nightfx .aur{position:absolute;width:140vmax;height:140vmax;border-radius:50%;will-change:transform}
+.aur.a1{left:-70vmax;top:-95vmax;background:radial-gradient(closest-side,rgba(130,70,255,.50),transparent);animation:aurA 30s ease-in-out infinite alternate}
+.aur.a2{right:-80vmax;top:5vh;background:radial-gradient(closest-side,rgba(0,215,200,.30),transparent);animation:aurB 38s ease-in-out infinite alternate}
+.aur.a3{left:-40vmax;bottom:-105vmax;background:radial-gradient(closest-side,rgba(255,60,170,.38),transparent);animation:aurC 44s ease-in-out infinite alternate}
+@keyframes aurA{to{transform:translate(20vmax,14vmax) scale(1.15)}}
+@keyframes aurB{to{transform:translate(-22vmax,18vmax) scale(.9)}}
+@keyframes aurC{to{transform:translate(26vmax,-12vmax) scale(1.2)}}
+.moon{position:absolute;right:16px;top:calc(12px + env(safe-area-inset-top));width:54px;height:54px;border-radius:50%;
+  background:
+   radial-gradient(circle at 62% 60%,rgba(60,50,20,.16) 0 9%,transparent 10%),
+   radial-gradient(circle at 30% 66%,rgba(60,50,20,.13) 0 7%,transparent 8%),
+   radial-gradient(circle at 56% 26%,rgba(60,50,20,.12) 0 6%,transparent 7%),
+   radial-gradient(circle at 35% 35%,#fffdf0 0 36%,#ebe5c6 64%,#bdb58f 100%);
+  box-shadow:0 0 22px 6px rgba(255,248,200,.38),0 0 100px 34px rgba(177,75,255,.28);
+  animation:moonf 9s ease-in-out infinite alternate}
+@keyframes moonf{to{transform:translateY(7px) rotate(6deg)}}
+body.night .wrap{position:relative;z-index:1}
+body.night .panel{background:rgba(16,18,31,.66);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-color:rgba(177,75,255,.30);box-shadow:0 8px 30px -12px rgba(177,75,255,.65),inset 0 0 0 1px rgba(43,212,255,.05)}
+body.night .panel h2{color:#bfb0ff;text-shadow:0 0 12px rgba(177,75,255,.7)}
+body.night h1{background:var(--ngrad);background-size:300% auto;-webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;animation:nshift 9s linear infinite;filter:drop-shadow(0 0 14px rgba(177,75,255,.55))}
+body.night h1::after{content:" 🦉";display:inline-block;background:none;-webkit-text-fill-color:#fff;animation:owlbob 3.4s ease-in-out infinite}
+@keyframes nshift{to{background-position:300% center}}
+@keyframes owlbob{50%{transform:translateY(-3px) rotate(-6deg)}}
+body.night .xpbar{background:rgba(255,255,255,.07)}
+body.night .xpbar i{background:var(--ngrad);background-size:300% 100%;animation:nshift 4s linear infinite;box-shadow:0 0 14px rgba(48,242,166,.65)}
+body.night .mbar i{background:linear-gradient(90deg,#30f2a6,#2bd4ff);box-shadow:0 0 8px rgba(48,242,166,.6)}
+body.night .mbar i.seen{background:#b14bff;opacity:.5;box-shadow:none}
+body.night .bigbtn:not(.ghost){background:linear-gradient(135deg,#8b2cff,#2bd4ff 130%);
+  box-shadow:0 0 20px -2px rgba(139,44,255,.75);animation:npulse 3.2s ease-in-out infinite}
+@keyframes npulse{50%{box-shadow:0 0 32px 2px rgba(43,212,255,.7)}}
+body.night .bigbtn[disabled]{animation:none;box-shadow:none}
+body.night .chip{border-color:rgba(177,75,255,.35)}
+body.night .chip[aria-pressed="true"]{background:linear-gradient(135deg,#8b2cff,#2bd4ff 140%);border-color:transparent;box-shadow:0 0 16px -2px rgba(139,44,255,.8)}
+body.night .qcard{background:rgba(16,18,31,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-color:rgba(177,75,255,.4);box-shadow:0 10px 36px -12px rgba(177,75,255,.7)}
+body.night .qcard.nglow{box-shadow:0 0 0 2px var(--ok),0 0 40px -4px var(--ok)}
+body.night .opt{background:rgba(16,18,31,.72);border-color:rgba(177,75,255,.32)}
+body.night .opt:active{box-shadow:0 0 18px -3px var(--accent)}
+body.night .opt.ok{box-shadow:0 0 24px -3px var(--ok),inset 0 0 20px -10px var(--ok)}
+body.night .opt.bad{box-shadow:0 0 24px -3px var(--bad),inset 0 0 20px -10px var(--bad)}
+body.night .combo{text-shadow:0 0 10px #ff8a3d,0 0 24px #ff3d81}
+body.night .tprog i{background:var(--ngrad);background-size:300% 100%;animation:nshift 4s linear infinite}
+body.night .timer i{background:#2bd4ff;box-shadow:0 0 10px #2bd4ff}
+body.night .pop-xp{text-shadow:0 0 14px var(--ok)}
+.nightcard{display:none;gap:12px;align-items:center;position:relative;border-radius:var(--radius);padding:13px 14px;margin-bottom:12px;
+  background:linear-gradient(135deg,rgba(60,20,110,.75),rgba(10,40,70,.7));
+  border:1px solid rgba(177,75,255,.55);box-shadow:0 0 30px -6px rgba(43,212,255,.55),inset 0 0 40px -20px rgba(177,75,255,.9);overflow:hidden}
+body.night .nightcard{display:flex}
+.nightcard::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.10) 50%,transparent 65%);
+  transform:translateX(-120%);animation:nsheen 5.5s ease-in-out infinite;pointer-events:none}
+@keyframes nsheen{60%,100%{transform:translateX(120%)}}
+.nowl{font-size:38px;line-height:1;filter:drop-shadow(0 0 12px rgba(255,209,102,.7));animation:owlbob 3.4s ease-in-out infinite}
+.nbody{flex:1;min-width:0}
+.nbody b{display:block;font-size:15.5px;background:var(--ngrad);background-size:300% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:nshift 7s linear infinite}
+.nchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.nchip{font-size:11.5px;font-weight:650;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#f1ecff;white-space:nowrap}
+.nchip.g{color:#30f2a6;border-color:rgba(48,242,166,.5)}.nchip.y{color:#ffd166;border-color:rgba(255,209,102,.5)}.nchip.p{color:#ff8fd0;border-color:rgba(255,93,177,.5)}
+.nsub{font-size:11.5px;color:#b9b2e6;margin-top:6px}
+/* hullócsillag */
+.meteor{position:fixed;left:0;z-index:70;width:58px;height:58px;border:0;border-radius:50%;background:radial-gradient(circle,rgba(255,236,170,.30),transparent 68%);
+  font-size:34px;line-height:58px;text-align:center;padding:0;cursor:pointer;filter:drop-shadow(0 0 12px #ffd166);
+  animation:meteor 6s linear forwards;-webkit-tap-highlight-color:transparent}
+.meteor::before{content:"";position:absolute;right:46px;top:27px;width:120px;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,transparent,rgba(255,236,170,.85));transform:rotate(-14deg);transform-origin:right center;pointer-events:none}
+.meteor.gold{filter:drop-shadow(0 0 16px #ff9d2e) hue-rotate(-12deg)}
+@keyframes meteor{from{transform:translate(-22vw,0) rotate(14deg)}to{transform:translate(122vw,34vh) rotate(14deg)}}
+.ntoast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-30px);z-index:120;opacity:0;pointer-events:none;
+  background:rgba(20,10,44,.92);border:1px solid #b14bff;color:#fff;padding:10px 16px;border-radius:14px;font-weight:650;font-size:14.5px;text-align:center;max-width:90vw;
+  box-shadow:0 0 30px -4px rgba(177,75,255,.9);transition:.35s}
+.ntoast.on{opacity:1;transform:translate(-50%,0)}
+.sparkle{position:fixed;z-index:110;pointer-events:none;font-size:16px;animation:sparkle .9s ease-out forwards}
+@keyframes sparkle{from{opacity:1;transform:translate(0,0) scale(1)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3) rotate(160deg)}}
+@media (prefers-reduced-motion: reduce){
+  body.night *,#nightfx *{animation-duration:0.01ms!important;animation-iteration-count:1!important}
+}
 
 /* kritikus találat */
 .crit{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
@@ -217,9 +296,13 @@ body.night h1::after{content:" 🦉"}
 </head>
 <body>
 <canvas id="confetti"></canvas>
+<div id="nightfx" aria-hidden="true"><div class="aur a1"></div><div class="aur a2"></div><div class="aur a3"></div><canvas id="nightsky"></canvas><div class="moon"></div></div>
+<div class="ntoast" id="ntoast" role="status"></div>
 
 <div id="home" class="wrap">
   <h1>Sejtbiológia gyakorló</h1>
+
+  <div class="nightcard" id="nightcard"><div class="nowl">🦉</div><div class="nbody"><b id="nc-title"></b><div class="nchips" id="nc-chips"></div><div class="nsub" id="nc-sub"></div></div></div>
 
   <div class="panel hero">
     <div class="ring">
@@ -336,6 +419,7 @@ body.night h1::after{content:" 🦉"}
     <h2>Beállítás</h2>
     <div class="togrow"><span>Online toplista</span><button class="sw" id="sw-online" aria-pressed="false"><i></i></button></div>
     <div class="togrow"><span>Neved (dicsőségtábla, kihívás)</span><input class="namein" id="nameinput" maxlength="14" placeholder="Te"></div>
+    <div class="togrow"><span>Éjszakai kinézet mindig <small style="color:var(--muted)">(bónusz csak 00–04 közt)</small></span><button class="sw" id="sw-nightlook" aria-pressed="false"><i></i></button></div>
     <div class="togrow"><span>Zene</span><button class="sw" id="sw-music" aria-pressed="true"><i></i></button></div>
     <div class="togrow"><span>Hang (helyes/hibás jelzés)</span><button class="sw" id="sw-sound" aria-pressed="false"><i></i></button></div>
     <div class="togrow"><span>Rezgés</span><button class="sw" id="sw-vibe" aria-pressed="true"><i></i></button></div>
@@ -426,7 +510,7 @@ const QTIME = 25;              // másodperc
 
 /* ---------- store ---------- */
 let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1,
-         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:1, cid:'', tok:null, lastSync:0};
+         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:1, cid:'', tok:null, lastSync:0, nightAlways:0, stars:0, nightLog:[]};
 try{
   const raw = JSON.parse(localStorage.getItem(KEY) || "null");
   if(raw) S = Object.assign(S, raw);
@@ -465,6 +549,8 @@ const BADGES = [
   {id:"crit",   icon:"🎯", name:"Kritikus találat", test:()=>(S.crits||0)>=1},
   {id:"crit10", icon:"☄️", name:"10 kritikus",   test:()=>(S.crits||0)>=10},
   {id:"night",  icon:"🦉", name:"Éjszakai műszak", test:()=>!!S.nightOwl},
+  {id:"stars5", icon:"🌠", name:"5 hullócsillag", test:()=>(S.stars||0)>=5},
+  {id:"night3", icon:"🌙", name:"3 éjszaka egymás után", test:()=>nightStreak()>=3},
   {id:"boss1",  icon:"⚔️", name:"Első boss",     test:()=>(S.boss||[]).length>=1},
   {id:"boss5",  icon:"🛡️", name:"5 boss legyőzve", test:()=>(S.boss||[]).length>=5},
   {id:"perfect",icon:"🎖️", name:"Hibátlan kör",  test:()=>!!S.perfect},
@@ -731,7 +817,7 @@ async function ensureToken(){
 function exportState(){
   return {q:S.q, xp:S.xp, best:S.best, days:S.days, goal:S.goal, badges:S.badges, name:S.name,
           hof:S.hof, boss:S.boss, daily:S.daily, crits:S.crits, duels:S.duels,
-          perfect:S.perfect||0, nightOwl:S.nightOwl||0};
+          perfect:S.perfect||0, nightOwl:S.nightOwl||0, stars:S.stars||0, nightLog:S.nightLog||[]};
 }
 function mergeState(a, b){
   a = a || {}; b = b || {};
@@ -743,6 +829,8 @@ function mergeState(a, b){
     duels: Math.max(a.duels||0, b.duels||0),
     perfect: (a.perfect||b.perfect) ? 1 : 0,
     nightOwl: (a.nightOwl||b.nightOwl) ? 1 : 0,
+    stars: Math.max(a.stars||0, b.stars||0),
+    nightLog: uniq(a.nightLog, b.nightLog).sort().slice(-30),
     goal: a.goal || b.goal || 20,
     name: (a.name && a.name.trim()) || b.name || "",
     badges: uniq(a.badges, b.badges),
@@ -939,7 +1027,135 @@ function bossWon(l){ return (S.boss||[]).indexOf(String(l)) >= 0; }
 
 /* éjszakai műszak */
 function isNight(){ const hr = new Date().getHours(); return hr >= 0 && hr < 4; }
-function applyNight(){ document.body.classList.toggle("night", isNight()); }
+function localDay(d){ d = d || new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function nightStreak(incl){
+  const log = new Set(S.nightLog||[]); const d = new Date(); let n = 0;
+  const today0 = log.has(localDay(d));
+  if(!today0) d.setDate(d.getDate()-1);
+  while(log.has(localDay(d)) && n < 999){ n++; d.setDate(d.getDate()-1); }
+  return n + ((incl && !today0 && isNight()) ? 1 : 0);
+}
+function nightMult(){ return isNight() ? Math.min(2, 1.5 + 0.1*(Math.max(1, nightStreak(true))-1)) : 1; }
+function nightLogToday(){
+  if(!isNight()) return;
+  const k = localDay(); S.nightLog = S.nightLog || [];
+  if(!S.nightLog.includes(k)){ S.nightLog.push(k); S.nightLog = S.nightLog.slice(-30); }
+}
+function nightLook(){ return isNight() || !!S.nightAlways; }
+
+const Night = (function(){
+  const cv = document.getElementById("nightsky"), cx = cv.getContext("2d");
+  let stars = [], raf = 0, last = 0, running = false, mTimer = 0, w = 0, h = 0;
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const COLS = ["255,255,255","205,190,255","160,230,255","255,200,240"];
+  function build(){
+    w = cv.width = innerWidth; h = cv.height = innerHeight;
+    const n = Math.max(60, Math.min(150, Math.round(w*h/9000)));
+    stars = Array.from({length:n}, ()=>({x:Math.random()*w, y:Math.random()*h, r:.4+Math.random()*1.3,
+      p:Math.random()*6.28, sp:.5+Math.random()*1.8, c:COLS[(Math.random()*COLS.length)|0], big:Math.random()<.07}));
+  }
+  function draw(t){
+    cx.clearRect(0,0,w,h);
+    for(const s of stars){
+      const a = .3 + .7*(.5+.5*Math.sin(t/1000*s.sp + s.p));
+      cx.fillStyle = "rgba("+s.c+","+a.toFixed(2)+")";
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.283); cx.fill();
+      if(s.big){
+        cx.strokeStyle = "rgba("+s.c+","+(a*.7).toFixed(2)+")"; cx.lineWidth = .8;
+        const L = 5 + 4*a;
+        cx.beginPath(); cx.moveTo(s.x-L,s.y); cx.lineTo(s.x+L,s.y); cx.moveTo(s.x,s.y-L); cx.lineTo(s.x,s.y+L); cx.stroke();
+      }
+      if(!reduce){ s.y += .012*s.r; if(s.y > h+4){ s.y = -4; s.x = Math.random()*w; } }
+    }
+  }
+  function loop(t){
+    if(!running) return;
+    raf = requestAnimationFrame(loop);
+    if(document.hidden || t - last < 40) return;
+    last = t; draw(t);
+  }
+  function start(){ if(running) return; running = true; build(); draw(0); if(!reduce) raf = requestAnimationFrame(loop); }
+  function stop(){ running = false; cancelAnimationFrame(raf); }
+  addEventListener("resize", ()=>{ if(running){ build(); draw(0); } });
+
+  function toast(msg, ms){
+    const t = document.getElementById("ntoast"); t.textContent = msg; t.classList.add("on");
+    clearTimeout(toast.h); toast.h = setTimeout(()=>t.classList.remove("on"), ms || 2600);
+  }
+  function sparks(x, y, em){
+    for(let i=0;i<10;i++){
+      const e = document.createElement("div"); e.className = "sparkle"; e.textContent = em[(Math.random()*em.length)|0];
+      const an = Math.random()*6.283, d = 40 + Math.random()*70;
+      e.style.left = x+"px"; e.style.top = y+"px";
+      e.style.setProperty("--dx", Math.cos(an)*d+"px"); e.style.setProperty("--dy", Math.sin(an)*d+"px");
+      document.body.appendChild(e); setTimeout(()=>e.remove(), 950);
+    }
+  }
+  function schedule(first){
+    clearTimeout(mTimer);
+    if(!isNight()) return;
+    mTimer = setTimeout(spawn, (first ? 9000 + Math.random()*8000 : 28000 + Math.random()*35000));
+  }
+  function spawn(){
+    if(!isNight()){ return; }
+    if(document.hidden){ schedule(); return; }
+    const gold = Math.random() < .12;
+    const b = document.createElement("button");
+    b.className = "meteor" + (gold ? " gold" : "");
+    b.textContent = gold ? "☄️" : "🌠";
+    b.setAttribute("aria-label", "Hullócsillag – koppints rá!");
+    b.style.top = (10 + Math.random()*42) + "vh";
+    b.addEventListener("animationend", ()=>{ b.remove(); schedule(); });
+    b.addEventListener("click", ev=>{
+      ev.stopPropagation();
+      const r = b.getBoundingClientRect(), cxp = r.left + r.width/2, cyp = r.top + r.height/2;
+      b.remove();
+      const n = gold ? 100 : 25 + ((Math.random()*26)|0);
+      S.xp += n; S.stars = (S.stars||0) + 1;
+      if(document.getElementById("quiz").style.display === "flex") sXP += n;
+      sparks(cxp, cyp, gold ? ["⭐","✨","💫","☄️"] : ["✨","⭐","💫","🌟"]);
+      buzz([10,30,10,30,20]);
+      const fresh = checkBadges(); save();
+      let msg = (gold ? "☄️ ARANY ÜSTÖKÖS! +" : "🌠 Hullócsillag! +") + n + " XP";
+      if(fresh.length) msg += "\n" + fresh.map(x=>x.icon+" "+x.name).join(" · ");
+      toast(msg, 3200);
+      if(document.getElementById("home").style.display !== "none") refresh();
+      schedule();
+    });
+    document.body.appendChild(b);
+  }
+  function banner(){
+    const el = document.getElementById("nightcard"); if(!el) return;
+    const real = isNight(), m = nightMult(), ns = nightStreak(true);
+    document.getElementById("nc-title").textContent = real ? "Éjszakai műszak – a bagoly figyel" : "Éjszakai kinézet";
+    const chips = document.getElementById("nc-chips"); chips.innerHTML = "";
+    function chip(t, c){ const s = document.createElement("span"); s.className = "nchip " + (c||""); s.textContent = t; chips.appendChild(s); }
+    if(real){
+      chip("×" + m.toFixed(1).replace(".0","") + " XP", "g");
+      chip("🎯 14% krit", "y");
+      chip("🌠 hullócsillagok", "p");
+      chip("🌙 " + ns + ". éjszaka egymás után");
+      const now = new Date(), end = new Date(now); end.setHours(4,0,0,0);
+      const min = Math.max(0, Math.round((end - now)/60000));
+      document.getElementById("nc-sub").textContent = "Még " + Math.floor(min/60) + " ó " + (min%60) + " p az éjszakai műszakból. " +
+        (ns < 5 ? "Holnap éjjel is gyere: minden egymást követő éjszaka +0,1 szorzó (max ×2)." : "Teljes szorzó elérve – kihozod a maximumot!");
+    } else {
+      chip("csak kinézet", "y");
+      document.getElementById("nc-sub").textContent = "A XP-bónusz, a krit-esély és a hullócsillagok 00:00 és 04:00 között járnak.";
+    }
+  }
+  function sync(){
+    const look = nightLook();
+    document.body.classList.toggle("night", look);
+    document.body.classList.toggle("realnight", isNight());
+    const mt = document.querySelector('meta[name="theme-color"]'); if(mt) mt.setAttribute("content", look ? "#07080f" : "#0f1720");
+    if(look){ start(); banner(); } else stop();
+    if(isNight()){ if(!mTimer) schedule(true); } else { clearTimeout(mTimer); mTimer = 0; }
+  }
+  setInterval(()=>{ applyNight(); }, 30000);
+  return {sync, banner, toast, sparks, spawn};
+})();
+function applyNight(){ Night.sync(); }
 
 /* ---------- fx ---------- */
 let actx = null;
@@ -960,7 +1176,7 @@ function buzz(ms){ if(!S.vibe) return; try{ navigator.vibrate && navigator.vibra
 function confetti(){
   const c = document.getElementById("confetti"), x = c.getContext("2d");
   c.width = innerWidth; c.height = innerHeight; c.style.display = "block";
-  const cols = ["#2563eb","#8b5cf6","#22c55e","#f59e0b","#ef4444"];
+  const cols = document.body.classList.contains("night") ? ["#b14bff","#2bd4ff","#30f2a6","#ff5db1","#ffd166"] : ["#2563eb","#8b5cf6","#22c55e","#f59e0b","#ef4444"];
   const P = Array.from({length:70},()=>({
     x:innerWidth/2 + (Math.random()-.5)*90, y:innerHeight*0.32,
     vx:(Math.random()-.5)*9, vy:Math.random()*-11-3,
@@ -1056,6 +1272,7 @@ function boot(){
   document.getElementById("sw-timer").setAttribute("aria-pressed", !!S.timer);
   document.getElementById("sw-music").setAttribute("aria-pressed", !!S.music);
   document.getElementById("sw-online").setAttribute("aria-pressed", !!S.online);
+  document.getElementById("sw-nightlook").setAttribute("aria-pressed", !!S.nightAlways);
   document.getElementById("goalval").textContent = S.goal;
   pendingChallenge = readChallenge();
   const ni = document.getElementById("nameinput");
@@ -1103,6 +1320,7 @@ function tog(id, key){
   });
 }
 tog("sw-sound","sound"); tog("sw-vibe","vibe"); tog("sw-timer","timer"); tog("sw-music","music"); tog("sw-online","online");
+document.getElementById("sw-nightlook").addEventListener("click", e=>{ S.nightAlways = S.nightAlways ? 0 : 1; save(); e.currentTarget.setAttribute("aria-pressed", !!S.nightAlways); applyNight(); });
 document.getElementById("sw-online").addEventListener("click", ()=>{ if(S.online) pushScore(); loadBoards(); });
 document.getElementById("loginbtn").addEventListener("click", ()=>doAuth("in"));
 document.getElementById("signupbtn").addEventListener("click", ()=>doAuth("up"));
@@ -1153,6 +1371,7 @@ function pick(f, n){
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } }
 
 function refresh(){
+  if(document.body.classList.contains("night")) Night.banner();
   const lv = levelOf(S.xp), into = S.xp % 500;
   document.getElementById("lvltxt").textContent = lv + ". szint";
   document.getElementById("xptxt").textContent = S.xp + " XP · még " + (500-into) + " a következőig";
@@ -1387,7 +1606,7 @@ function answer(i){
   const r = rec(q.n);
   let gained = 0;
   if(ci >= 0){
-    sAnswered++;
+    sAnswered++; nightLogToday();
     const d = today(); S.days[d] = (S.days[d]||0) + 1;
     if(good){
       r.ok++; r.run = (r.run||0) + 1; sOK++; sStreak++;
@@ -1397,7 +1616,8 @@ function answer(i){
       gained = 10 + speed + Math.min(10, sStreak - 1) * 2;
       if(r.run === MASTER){ gained += 25; sMaster++; }
       if(roundMode === "boss") gained *= 2;
-      const crit = Math.random() < 0.08;
+      if(isNight()){ nightLogToday(); gained = Math.round(gained * nightMult()); }
+      const crit = Math.random() < (isNight() ? 0.14 : 0.08);
       if(crit){
         gained *= 2; S.crits = (S.crits||0) + 1;
         const c = document.createElement("div"); c.className = "crit"; c.textContent = "KRITIKUS ×2";
@@ -1409,13 +1629,16 @@ function answer(i){
       S.xp += gained; sXP += gained;
       beep(true); buzz(18);
       const p = document.createElement("div");
-      p.className = "pop-xp"; p.textContent = "+" + gained;
+      p.className = "pop-xp"; p.textContent = "+" + gained + (isNight() ? " 🦉" : "");
       document.getElementById("qcard").appendChild(p);
       setTimeout(()=>p.remove(), 1000);
       const c = document.getElementById("combo");
       c.textContent = "🔥"+sStreak; c.classList.add("pop");
       setTimeout(()=>c.classList.remove("pop"), 160);
-      if(sStreak && sStreak % 10 === 0) confetti();
+      if(document.body.classList.contains("night")){
+        const qc = document.getElementById("qcard"); qc.classList.add("nglow"); setTimeout(()=>qc.classList.remove("nglow"), 650);
+        if(sStreak && sStreak % 5 === 0) confetti();
+      } else if(sStreak && sStreak % 10 === 0) confetti();
     } else {
       r.bad++; r.run = 0; sStreak = 0; sBad.push(q.n);
       beep(false); buzz([40,60,40]);
