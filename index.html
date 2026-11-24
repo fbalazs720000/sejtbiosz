@@ -322,8 +322,8 @@ body.centri .wrap{animation:centri 2.3s ease-in-out;transform-origin:50% 40vh}
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
 .tag{font-size:11px;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600}
 .tag.grey{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500}
-.tag.false{background:var(--bad-bg);color:var(--bad)}
-.tag.true{background:var(--ok-bg);color:var(--ok)}
+.tag.false{background:var(--accent-soft);color:var(--accent)}
+.tag.true{background:var(--accent-soft);color:var(--accent)}
 .tag.warn{background:var(--warn-bg);color:var(--warn)}
 .qtext{font-size:16.5px;font-weight:600;line-height:1.4;margin:0 0 14px}
 .opt{display:flex;gap:11px;width:100%;text-align:left;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:13px;margin-bottom:9px;cursor:pointer;transition:.12s;font-size:15.3px;line-height:1.38}
@@ -796,9 +796,17 @@ async function sbCall(fn, body){
   const t = await r.text();
   return t ? JSON.parse(t) : null;
 }
+let sessionWarned = false;
 async function pushScore(dDate, dScore){
   if(!S.online) return;
-  await ensureToken();
+  const wasLoggedIn = loggedIn();
+  const ok = await ensureToken();
+  if(wasLoggedIn && !ok){
+    // a munkamenet lejart: ne irjunk tovabb a neven kereszul egy anonim (eszközhöz kötött) sorba,
+    // mert az megduplazna a ranglista-bejegyzest
+    if(!sessionWarned){ sessionWarned = true; try{ Night.toast("⚠️ Lejárt a belépésed – jelentkezz be újra, különben a pontjaid nem a fiókodhoz kerülnek.", 5000); }catch(e){} }
+    return;
+  }
   const nm = (S.name||"").trim();
   if(!nm) return;
   try{
