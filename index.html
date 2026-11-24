@@ -198,6 +198,80 @@ body.night .nightcard{display:flex}
   body.night *,#nightfx *{animation-duration:0.01ms!important;animation-iteration-count:1!important}
 }
 
+
+/* ===== ZH-mód ===== */
+body.zh{--bg:#efe8d6;--card:#fffdf5;--fg:#141a33;--muted:#6a6e84;--line:#d6ccb2;--accent:#1e3a8a;--accent-soft:#e1e6f6;
+  --ok:#1d7a4a;--ok-bg:#e0f0e5;--bad:#a1202d;--bad-bg:#f6dfe0;--warn:#8a5f00;--warn-bg:#f5ebcc;--gold:#a67c00;--radius:10px;
+  background-image:linear-gradient(rgba(30,58,138,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(30,58,138,.05) 1px,transparent 1px);background-size:26px 26px}
+body.zh h1{font-family:Georgia,"Times New Roman",serif;color:#101a44;border-bottom:3px double #1e3a8a;padding-bottom:7px}
+body.zh .panel h2{font-family:Georgia,"Times New Roman",serif;color:#1e3a8a;letter-spacing:.08em}
+body.zh .panel{box-shadow:0 1px 0 rgba(20,26,51,.06),0 8px 18px -12px rgba(20,26,51,.4)}
+body.zh .bigbtn:not(.ghost){background:#14224f;box-shadow:0 0 0 2px #c9a24a inset}
+body.zh .qcard{box-shadow:0 10px 26px -16px rgba(20,26,51,.55)}
+body.zh .qtext{font-family:Georgia,"Times New Roman",serif}
+@media (prefers-color-scheme: dark){
+  body.zh{--bg:#0a1126;--card:#111b3a;--fg:#ece6d2;--muted:#9aa4c6;--line:#243061;--accent:#e0b861;--accent-soft:#1c2a52;
+    --ok:#5fd39a;--ok-bg:#10301f;--bad:#ff8a8a;--bad-bg:#3a1a20;--warn:#e0b861;--warn-bg:#352b10;--gold:#e0b861;
+    background-image:linear-gradient(rgba(224,184,97,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(224,184,97,.05) 1px,transparent 1px)}
+  body.zh h1{color:#f3ecd6;border-bottom-color:#e0b861}
+  body.zh .panel h2{color:#e0b861}
+  body.zh .bigbtn:not(.ghost){background:#e0b861;color:#0a1126;box-shadow:none}
+  body.zh .chip[aria-pressed="true"]{color:#0a1126}
+}
+.zhcard{display:none;position:relative;border-radius:var(--radius);padding:14px;margin-bottom:12px;color:#f3ecd6;
+  background:linear-gradient(160deg,#14224f,#0d1736);border:1px solid #c9a24a;
+  box-shadow:0 12px 30px -14px rgba(10,20,60,.75),inset 0 0 0 3px rgba(201,162,74,.12)}
+.zhcard.on{display:block}
+.zhhead{display:flex;gap:12px;align-items:center}
+.zhseal{flex:0 0 48px;height:48px;border-radius:50%;border:2px solid #c9a24a;display:flex;align-items:center;justify-content:center;
+  font-family:Georgia,serif;font-weight:800;font-size:17px;color:#c9a24a;box-shadow:inset 0 0 0 3px rgba(201,162,74,.2)}
+.zhhead b{font-family:Georgia,"Times New Roman",serif;font-size:16.5px;display:block}
+.zhhead small{color:#b9c0dc;font-size:12px}
+.zhclock{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:34px;font-weight:700;letter-spacing:.04em;text-align:center;
+  margin:10px 0 8px;color:#fff;text-shadow:0 0 18px rgba(201,162,74,.35);font-variant-numeric:tabular-nums}
+.zhcard.warn .zhclock{color:#ffd37a}
+.zhcard.urgent{border-color:#ff6b6b;animation:zhpulse 2.4s ease-in-out infinite}
+.zhcard.urgent .zhclock{color:#ff9a9a}
+@keyframes zhpulse{50%{box-shadow:0 0 30px -2px rgba(255,90,90,.65)}}
+.zhbar{height:9px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;position:relative}
+.zhbar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.zhbar .s{background:rgba(201,162,74,.45)}.zhbar .m{background:#c9a24a}
+.zhnums{display:flex;justify-content:space-between;gap:6px;font-size:12px;color:#c9d0ea;margin-top:6px;flex-wrap:wrap}
+.zhnums b{color:#fff}
+.zhbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.zhbtns button{border:1px solid rgba(201,162,74,.6);background:rgba(255,255,255,.06);color:#f6efd8;border-radius:10px;padding:10px 8px;
+  font-size:13px;font-weight:650;cursor:pointer;line-height:1.25}
+.zhbtns button small{display:block;font-weight:400;opacity:.8;font-size:11px;margin-top:2px}
+.zhbtns button:disabled{opacity:.38;cursor:default}
+.zhbtns button.sim{grid-column:1/3;background:#c9a24a;color:#14224f;border-color:#c9a24a;font-size:14px}
+.zhtip{margin-top:10px;font-size:12px;color:#b9c0dc;font-style:italic}
+.zhmini{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.boostchip{font-size:11.5px;font-weight:700;color:#fff;background:linear-gradient(90deg,#ff9d2e,#ff3d81);border-radius:99px;padding:2px 8px;display:none}
+.boostchip.on{display:inline-block}
+/* ritka dropok, titkok */
+.tag.mut{background:linear-gradient(90deg,#8b2cff,#ff2bd6);color:#fff}
+.qtext.mutant{text-shadow:2px 0 rgba(255,43,214,.55),-2px 0 rgba(43,212,255,.55);animation:glitch 2.4s infinite}
+@keyframes glitch{0%,90%,100%{transform:none}92%{transform:translate(-3px,1px) skewX(5deg)}94%{transform:translate(3px,-1px)}96%{transform:translate(-2px,2px) skewX(-6deg)}98%{transform:translate(1px,0)}}
+.bigdrop{position:fixed;inset:0;z-index:130;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  pointer-events:none;overflow:hidden;animation:dropin .45s ease-out}
+.bigdrop .e{font-size:96px;line-height:1;animation:dropspin 2.6s ease-in-out;filter:drop-shadow(0 0 24px rgba(255,255,255,.6))}
+.bigdrop b{font-size:27px;letter-spacing:.07em;margin-top:10px;color:#fff;text-shadow:0 0 24px currentColor}
+.bigdrop span{font-size:15px;color:#fff;opacity:.92;margin-top:5px}
+.bigdrop.gold{background:radial-gradient(circle,rgba(255,200,60,.6),rgba(0,0,0,.6) 72%)}
+.bigdrop.gold b{color:#ffd75e}
+.bigdrop.legend{background:#05030f}
+.bigdrop.legend::before{content:"";position:absolute;inset:-60%;z-index:-1;background:conic-gradient(from 0deg,#3b0a7a,#0a4a7a,#7a0a5a,#0a7a5a,#3b0a7a);animation:legspin 5s linear infinite;opacity:.85}
+.bigdrop.legend b{color:#7dffd8}
+@keyframes dropin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes dropspin{0%{transform:scale(.3) rotate(-200deg)}35%{transform:scale(1.25) rotate(20deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes legspin{to{transform:rotate(360deg)}}
+.fall{position:fixed;top:-34px;z-index:125;pointer-events:none;font-size:24px;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(420deg)}}
+#rain{position:fixed;inset:0;z-index:126;pointer-events:none;display:none}
+body.centri .wrap{animation:centri 2.3s ease-in-out;transform-origin:50% 40vh}
+@keyframes centri{0%{transform:rotate(0)}55%{transform:rotate(720deg) scale(.55);filter:blur(2px)}100%{transform:rotate(1080deg) scale(1)}}
+.ntoast{white-space:pre-line}
+
 /* kritikus találat */
 .crit{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
   font-size:30px;font-weight:900;color:var(--gold);text-shadow:0 0 18px var(--gold);
@@ -296,11 +370,23 @@ body.night .nightcard{display:flex}
 </head>
 <body>
 <canvas id="confetti"></canvas>
+<canvas id="rain"></canvas>
 <div id="nightfx" aria-hidden="true"><div class="aur a1"></div><div class="aur a2"></div><div class="aur a3"></div><canvas id="nightsky"></canvas><div class="moon"></div></div>
 <div class="ntoast" id="ntoast" role="status"></div>
 
 <div id="home" class="wrap">
   <h1>Sejtbiológia gyakorló</h1>
+
+  <div class="zhcard" id="zhcard">
+    <div class="zhhead"><div class="zhseal">ZH</div><div><b id="zh-title">Zárthelyi</b><small id="zh-sub"></small></div></div>
+    <div class="zhclock" id="zh-clock">--:--:--</div>
+    <div id="zh-body">
+      <div class="zhbar"><i class="s" id="zh-sbar"></i><i class="m" id="zh-mbar"></i></div>
+      <div class="zhnums" id="zh-nums"></div>
+      <div class="zhbtns" id="zh-btns"></div>
+      <div class="zhtip" id="zh-tip"></div>
+    </div>
+  </div>
 
   <div class="nightcard" id="nightcard"><div class="nowl">🦉</div><div class="nbody"><b id="nc-title"></b><div class="nchips" id="nc-chips"></div><div class="nsub" id="nc-sub"></div></div></div>
 
@@ -413,6 +499,7 @@ body.night .nightcard{display:flex}
   <div class="panel" style="margin-top:12px">
     <h2>Jelvények <span id="badgecount" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
     <div class="badges" id="badges"></div>
+    <div class="hint" id="rarelist" style="margin-top:10px"></div>
   </div>
 
   <div class="panel">
@@ -440,6 +527,8 @@ body.night .nightcard{display:flex}
       <button class="xbtn" id="quit">✕</button>
       <div class="tprog"><i id="tbar" style="width:0"></i></div>
       <span id="counter">0/0</span>
+      <span class="zhmini" id="zhmini"></span>
+      <span class="boostchip" id="boostchip"></span>
       <span class="combo" id="combo">🔥0</span>
       <button class="xbtn" id="mutebtn" style="padding:4px 0 4px 4px;font-size:16px">🔊</button>
     </div>
@@ -510,7 +599,7 @@ const QTIME = 25;              // másodperc
 
 /* ---------- store ---------- */
 let S = {q:{}, xp:0, best:0, days:{}, goal:20, badges:[], sound:0, vibe:1, timer:1, music:1,
-         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:1, cid:'', tok:null, lastSync:0, nightAlways:0, stars:0, nightLog:[]};
+         name:'', hof:[], boss:[], daily:{}, crits:0, duels:0, online:1, cid:'', tok:null, lastSync:0, nightAlways:0, stars:0, nightLog:[], rare:{}, eggs:[], zhsim:0, zhSec:{}};
 try{
   const raw = JSON.parse(localStorage.getItem(KEY) || "null");
   if(raw) S = Object.assign(S, raw);
@@ -551,6 +640,11 @@ const BADGES = [
   {id:"night",  icon:"🦉", name:"Éjszakai műszak", test:()=>!!S.nightOwl},
   {id:"stars5", icon:"🌠", name:"5 hullócsillag", test:()=>(S.stars||0)>=5},
   {id:"night3", icon:"🌙", name:"3 éjszaka egymás után", test:()=>nightStreak()>=3},
+  {id:"rare4", icon:"💎", name:"Ritkaság-vadász", test:()=>["mutant","boost","gold","legend"].every(k=>((S.rare||{})[k]||0)>=1)},
+  {id:"legend", icon:"🌌", name:"Legendás drop", test:()=>((S.rare||{}).legend||0)>=1},
+  {id:"egg3", icon:"🥚", name:"Titkos ügynök", test:()=>(S.eggs||[]).length>=3},
+  {id:"egg8", icon:"🕵️", name:"Minden titok", test:()=>(S.eggs||[]).length>=8},
+  {id:"zhsim", icon:"📝", name:"ZH-szimuláció", test:()=>(S.zhsim||0)>=1},
   {id:"boss1",  icon:"⚔️", name:"Első boss",     test:()=>(S.boss||[]).length>=1},
   {id:"boss5",  icon:"🛡️", name:"5 boss legyőzve", test:()=>(S.boss||[]).length>=5},
   {id:"perfect",icon:"🎖️", name:"Hibátlan kör",  test:()=>!!S.perfect},
@@ -817,7 +911,7 @@ async function ensureToken(){
 function exportState(){
   return {q:S.q, xp:S.xp, best:S.best, days:S.days, goal:S.goal, badges:S.badges, name:S.name,
           hof:S.hof, boss:S.boss, daily:S.daily, crits:S.crits, duels:S.duels,
-          perfect:S.perfect||0, nightOwl:S.nightOwl||0, stars:S.stars||0, nightLog:S.nightLog||[]};
+          perfect:S.perfect||0, nightOwl:S.nightOwl||0, stars:S.stars||0, nightLog:S.nightLog||[], rare:S.rare||{}, eggs:S.eggs||[], zhsim:S.zhsim||0, zhSec:S.zhSec||{}};
 }
 function mergeState(a, b){
   a = a || {}; b = b || {};
@@ -831,6 +925,9 @@ function mergeState(a, b){
     nightOwl: (a.nightOwl||b.nightOwl) ? 1 : 0,
     stars: Math.max(a.stars||0, b.stars||0),
     nightLog: uniq(a.nightLog, b.nightLog).sort().slice(-30),
+    eggs: uniq(a.eggs, b.eggs),
+    zhsim: Math.max(a.zhsim||0, b.zhsim||0),
+    rare: {}, zhSec: {},
     goal: a.goal || b.goal || 20,
     name: (a.name && a.name.trim()) || b.name || "",
     badges: uniq(a.badges, b.badges),
@@ -840,6 +937,9 @@ function mergeState(a, b){
     q: Object.assign({}, b.q || {})
   };
   Object.keys(a.days||{}).forEach(k => out.days[k] = Math.max(a.days[k]||0, (b.days||{})[k]||0));
+  ["mutant","boost","gold","legend"].forEach(k => { const v = Math.max((a.rare||{})[k]||0, (b.rare||{})[k]||0); if(v) out.rare[k] = v; });
+  new Set(Object.keys(a.zhSec||{}).concat(Object.keys(b.zhSec||{}))).forEach(k => { out.zhSec[k] = Math.max((a.zhSec||{})[k]||0, (b.zhSec||{})[k]||0); });
+  { const ks = Object.keys(out.zhSec).sort().slice(-14), z = {}; ks.forEach(k => z[k] = out.zhSec[k]); out.zhSec = z; }
   Object.keys(a.daily||{}).forEach(k => {
     const x = a.daily[k], y = (b.daily||{})[k];
     out.daily[k] = (!y || (x && (x.o||0) >= (y.o||0))) ? x : y;
@@ -1014,6 +1114,7 @@ function startRound(list, m, opts){
   pool = list; lastPool = list.slice();
   idx = 0; sOK = 0; sBad = []; sXP = 0; sStreak = 0; sBestStreak = 0; sMaster = 0; sAnswered = 0;
   roundMode = m; ghostData = opts.ghost || null; bossLec = opts.lec || null;
+  boostLeft = 0; curMutant = false; if(window.Extras) Extras.boostUI();
   show("quiz"); render();
   if(S.music) Music.start();
 }
@@ -1026,6 +1127,8 @@ function bossReady(l){
 function bossWon(l){ return (S.boss||[]).indexOf(String(l)) >= 0; }
 
 /* éjszakai műszak */
+const ZH_END = new Date(2026, 10, 25, 12, 0, 0).getTime();
+function zhActive(){ return Date.now() < ZH_END; }
 function isNight(){ const hr = new Date().getHours(); return hr >= 0 && hr < 4; }
 function localDay(d){ d = d || new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function nightStreak(incl){
@@ -1148,7 +1251,9 @@ const Night = (function(){
     const look = nightLook();
     document.body.classList.toggle("night", look);
     document.body.classList.toggle("realnight", isNight());
-    const mt = document.querySelector('meta[name="theme-color"]'); if(mt) mt.setAttribute("content", look ? "#07080f" : "#0f1720");
+    const zhOn = zhActive() && !look;
+    document.body.classList.toggle("zh", zhOn);
+    const mt = document.querySelector('meta[name="theme-color"]'); if(mt) mt.setAttribute("content", look ? "#07080f" : (zhOn ? "#14224f" : "#0f1720"));
     if(look){ start(); banner(); } else stop();
     if(isNight()){ if(!mTimer) schedule(true); } else { clearTimeout(mTimer); mTimer = 0; }
   }
@@ -1196,6 +1301,7 @@ function confetti(){
 let selLec = new Set(), mode = "smart", len = 20;
 let pool = [], idx = 0, answered = false;
 let sStreak = 0, sBestStreak = 0, sOK = 0, sXP = 0, sMaster = 0, sBad = [], sAnswered = 0;
+let boostLeft = 0, curMutant = false;
 let tHandle = null, tLeft = QTIME;
 
 
@@ -1216,6 +1322,7 @@ let tHandle = null, tLeft = QTIME;
   nn.addEventListener("input", ()=>{
     S.name = nn.value.slice(0,14); save();
     const ni = document.getElementById("nameinput"); if(ni) ni.value = S.name;
+    Extras.nameEgg(S.name);
     sync();
   });
   document.getElementById("news-x").addEventListener("click", close);
@@ -1254,6 +1361,246 @@ let tHandle = null, tLeft = QTIME;
   };
 })();
 
+
+/* ---------- ZH-mód, ritka dropok, titkok ---------- */
+const Extras = (function(){
+  const TIPS = [
+    "A hibás kérdések adják a legtöbb nyereséget: először azokat vedd át.",
+    "Felidézni (kérdésre válaszolni) hatékonyabb, mint újraolvasni a jegyzetet.",
+    "A ZH előtti éjszaka 7–8 óra alvás többet ér, mint még egy óra tanulás.",
+    "Reggel: 15–20 perc a hibás kérdéseken, utána mehetsz és megoldod.",
+    "Ha elbizonytalanodsz: a „melyik a hamis” kérdéseknél minden állítást egyenként ellenőrizz."
+  ];
+  const qOpen = () => document.getElementById("quiz").style.display === "flex";
+  function bonusXP(n){ S.xp += n; if(qOpen()) sXP += n; }
+  const toast = (m, ms) => Night.toast(m, ms);
+
+  /* --- ZH kártya --- */
+  const T = () => ZH_END - Date.now();
+  function fmt(ms){
+    const t = Math.max(0, Math.floor(ms/1000)), h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60;
+    return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+  }
+  function stats(){
+    let seen = 0, mas = 0;
+    Q.forEach(q=>{ const r = S.q[q.n]; if(r && (r.ok+r.bad) > 0) seen++; if(mastered(q.n)) mas++; });
+    return {seen, mas, total: Q.length};
+  }
+  function weakLec(){
+    let best = null;
+    Object.keys(LEC).forEach(l=>{
+      const qs = Q.filter(q=>q.l==l); if(!qs.length) return;
+      const left = qs.filter(q=>!mastered(q.n)); if(!left.length) return;
+      const frac = 1 - left.length/qs.length;
+      if(!best || frac < best.frac) best = {l, frac, left};
+    });
+    return best;
+  }
+  function go(list, m, empty){
+    if(!list.length){ toast(empty); return; }
+    shuffle(list); startRound(list.slice(0, m==="zhsim" ? 40 : 40), m);
+  }
+  function render(){
+    const el = document.getElementById("zhcard"); if(!el) return;
+    const left = T(), day = 86400000;
+    if(left <= -day){ el.classList.remove("on"); return; }
+    el.classList.add("on");
+    const body = document.getElementById("zh-body");
+    if(left <= 0){
+      el.classList.remove("warn","urgent");
+      document.getElementById("zh-title").textContent = "A ZH lezajlott 🎓";
+      document.getElementById("zh-sub").textContent = "Remélem jól sikerült!";
+      document.getElementById("zh-clock").textContent = "Pihenj egyet – megérdemled.";
+      document.getElementById("zh-clock").style.cssText = "font-size:15px;letter-spacing:0;font-family:inherit";
+      body.style.display = "none"; return;
+    }
+    body.style.display = "";
+    document.getElementById("zh-clock").style.cssText = "";
+    const st = stats();
+    document.getElementById("zh-title").textContent = "Zárthelyi: " + (localDay() === "2026-11-25" ? "ma" : "holnap") + " 12:00";
+    document.getElementById("zh-sub").textContent = "Sejt molekuláris biológiája és genetikája I.";
+    document.getElementById("zh-sbar").style.width = (100*st.seen/st.total)+"%";
+    document.getElementById("zh-mbar").style.width = (100*st.mas/st.total)+"%";
+    const mins = Math.round(((S.zhSec||{})[localDay()]||0)/60);
+    document.getElementById("zh-nums").innerHTML =
+      "<span>látott <b>"+st.seen+"</b>/"+st.total+"</span><span>elsajátított <b>"+st.mas+"</b></span><span>ma fókusz: <b>"+mins+"</b> perc</span>";
+    // gombok
+    const wrong = Q.filter(q=>{ const r = S.q[q.n]; return r && r.bad > 0 && !mastered(q.n); });
+    const unseen = Q.filter(q=>{ const r = S.q[q.n]; return !r || (r.ok+r.bad) === 0; });
+    const wl = weakLec();
+    const bt = document.getElementById("zh-btns"); bt.innerHTML = "";
+    function btn(html, cls, on, dis){ const b = document.createElement("button"); b.innerHTML = html; if(cls) b.className = cls; b.disabled = !!dis; b.addEventListener("click", on); bt.appendChild(b); }
+    btn("🎯 Gyenge pontok<small>"+wrong.length+" hibás, nem elsajátított</small>", "", ()=>go(wrong.slice(),"zh","Nincs hibás, még nem elsajátított kérdésed. 👏"), !wrong.length);
+    btn("👀 Még nem láttam<small>"+unseen.length+" kérdés</small>", "", ()=>go(unseen.slice(),"zh","Mindent láttál már. 👏"), !unseen.length);
+    btn("📚 Leggyengébb előadás<small>"+(wl ? (LEC[wl.l]||"").replace(/^(\d+)\..*/,"$1. előadás")+" · "+wl.left.length+" hátra" : "nincs hátra")+"</small>", "", ()=>go(wl.left.slice(),"zh",""), !wl);
+    const marked = Q.filter(q=>{ const r = S.q[q.n]; return r && r.mark; });
+    btn("⭐ Megjelöltek<small>"+marked.length+" kérdés</small>", "", ()=>go(marked.slice(),"zh","Még nem jelöltél meg kérdést (☆ a kártyán)."), !marked.length);
+    btn("📝 ZH-szimuláció · 40 kérdés vegyesen az egész anyagból", "sim", ()=>go(Q.slice(),"zhsim",""));
+    document.getElementById("zh-tip").textContent = "💡 " + TIPS[Math.floor(Date.now()/600000) % TIPS.length];
+    tick();
+  }
+  function tick(){
+    const left = T();
+    const mini = document.getElementById("zhmini");
+    if(left <= 0){
+      if(mini) mini.textContent = "";
+      if(document.body.classList.contains("zh")){ applyNight(); }
+      return;
+    }
+    const f = fmt(left);
+    const ck = document.getElementById("zh-clock"); if(ck) ck.textContent = f;
+    if(mini) mini.textContent = "ZH –" + f.slice(0,5);
+    const el = document.getElementById("zhcard");
+    if(el){ el.classList.toggle("urgent", left < 3*3600000); el.classList.toggle("warn", left >= 3*3600000 && left < 12*3600000); }
+  }
+  setInterval(()=>{
+    tick();
+    if(T() <= 0 && T() > -2000) render();
+  }, 1000);
+  // fókusz-idő mérés
+  let ft = 0;
+  setInterval(()=>{
+    if(document.hidden || !qOpen()) return;
+    S.zhSec = S.zhSec || {}; const d = localDay(); S.zhSec[d] = (S.zhSec[d]||0) + 5;
+    const ks = Object.keys(S.zhSec); if(ks.length > 14){ ks.sort().slice(0, ks.length-14).forEach(k=>delete S.zhSec[k]); }
+    if(++ft % 6 === 0) save();
+  }, 5000);
+
+  /* --- ritka dropok --- */
+  function rare(k){ S.rare = S.rare || {}; S.rare[k] = (S.rare[k]||0) + 1; }
+  function overlay(emoji, title, sub, cls, ms){
+    const d = document.createElement("div"); d.className = "bigdrop " + cls;
+    d.innerHTML = '<div class="e"></div><b></b><span></span>';
+    d.children[0].textContent = emoji; d.children[1].textContent = title; d.children[2].textContent = sub;
+    document.body.appendChild(d);
+    setTimeout(()=>{ d.style.transition = "opacity .5s"; d.style.opacity = 0; }, ms - 500);
+    setTimeout(()=>d.remove(), ms);
+  }
+  function boostUI(){
+    const c = document.getElementById("boostchip"); if(!c) return;
+    c.classList.toggle("on", boostLeft > 0); c.textContent = "⚡ ×2 · " + boostLeft;
+  }
+  function afterGood(){
+    const r = Math.random();
+    let note = "";
+    if(r < .004){
+      rare("legend"); bonusXP(777); buzz([30,60,30,60,90]);
+      overlay("🌌","SZEKVENÁLÁS KÉSZ","LEGENDÁS DROP · +777 XP","legend",4200); dnaRain(4500); confetti();
+    } else if(r < .019){
+      rare("gold"); bonusXP(250); buzz([20,40,20,40,60]);
+      overlay("🟡","ARANYSEJT!","+250 XP","gold",2800); confetti();
+    } else if(r < .069 && boostLeft === 0){
+      rare("boost"); boostLeft = 3; boostUI();
+      toast("⚡ Enzim-gyorsítás! A következő 3 jó válasz dupla XP", 3200); buzz([15,30,15]);
+    }
+    if(sStreak === 7)  egg("c7", 7, "Szerencsés hetes! 🍀");
+    if(sStreak === 21) egg("c21", 21, "21. aminosav: a szelenocisztein 🧬 – a genetikai kód titkos extrája.");
+    if(sStreak === 42) egg("c42", 100, "42 jó válasz egymás után?! Ez már legenda. 🌌", confetti);
+  }
+  function afterAnswer(q, good){
+    if(q.n === 42) egg("q42", 42, "42 – az Élet, a Világegyetem és Minden kérdésére adott válasz. 🌌");
+    const d = new Date(), h = d.getHours(), m = d.getMinutes();
+    if(h === 11 && m === 11) egg("t1111", 11, "11:11 – kívánj valamit! 🌠");
+    if(h === 3 && m === 14) egg("t314", 31, "π-perc! 3:14 🥧");
+  }
+  /* --- titkok --- */
+  function egg(id, xp, msg, fx){
+    S.eggs = S.eggs || [];
+    if(S.eggs.includes(id)) return false;
+    S.eggs.push(id); bonusXP(xp);
+    const fresh = checkBadges(); save();
+    toast("🥚 Titok megtalálva! +" + xp + " XP\n" + msg + (fresh.length ? "\n🏅 " + fresh.map(b=>b.icon+" "+b.name).join(" · ") : ""), 4800);
+    buzz([20,40,20]);
+    if(fx) fx();
+    if(document.getElementById("home").style.display !== "none") refresh();
+    return true;
+  }
+  function dnaRain(ms){
+    const c = document.getElementById("rain"), x = c.getContext("2d");
+    c.width = innerWidth; c.height = innerHeight; c.style.display = "block";
+    const L = "ATGC", step = 18, n = Math.ceil(c.width/step);
+    const cols = Array.from({length:n}, ()=>({y:-Math.random()*c.height, v:3+Math.random()*5}));
+    const t0 = performance.now();
+    (function loop(t){
+      const el = t - t0; x.clearRect(0,0,c.width,c.height);
+      const fade = el > ms-700 ? Math.max(0,(ms-el)/700) : 1;
+      x.font = "bold 15px ui-monospace,Menlo,monospace";
+      cols.forEach((col,i)=>{
+        col.y += col.v; if(col.y > c.height + 260){ col.y = -Math.random()*200; col.v = 3+Math.random()*5; }
+        for(let k=0;k<14;k++){
+          const a = (1 - k/14) * fade;
+          x.fillStyle = k===0 ? "rgba(220,255,240,"+a+")" : "rgba(48,242,166,"+(a*.8)+")";
+          x.fillText(L[(i*7 + k*3 + (col.y/step|0)) % 4], i*step, col.y - k*step);
+        }
+      });
+      if(el < ms) requestAnimationFrame(loop); else { x.clearRect(0,0,c.width,c.height); c.style.display = "none"; }
+    })(t0);
+  }
+  function atpShower(){
+    for(let i=0;i<34;i++){
+      const e = document.createElement("div"); e.className = "fall"; e.textContent = i%5===0 ? "🔋" : "⚡";
+      e.style.left = (Math.random()*96)+"vw"; e.style.animationDelay = (Math.random()*1.2)+"s"; e.style.animationDuration = (1.8+Math.random()*1.3)+"s";
+      document.body.appendChild(e); setTimeout(()=>e.remove(), 4000);
+    }
+  }
+  function centrifuge(){ document.body.classList.add("centri"); setTimeout(()=>document.body.classList.remove("centri"), 2400); }
+  const NAMES = {
+    mendel:"🌱 Gregor Mendel a borsóval kezdte. Te a sejtbiológiával.",
+    watson:"🧬 Dupla hélix! Watson és Crick (és Rosalind Franklin!) előtt tisztelgünk.",
+    crick:"🧬 Dupla hélix! Watson és Crick (és Rosalind Franklin!) előtt tisztelgünk.",
+    franklin:"📸 Az 51-es fotó: Rosalind Franklin nélkül nincs hélix.",
+    rosalind:"📸 Az 51-es fotó: Rosalind Franklin nélkül nincs hélix.",
+    darwin:"🐢 A legalkalmasabb marad fenn – a ZH-n is.",
+    curie:"☢️ Két Nobel-díj. Nulla kifogás.",
+    mcclintock:"🌽 Az ugráló gének felfedezője – kukoricán.",
+    szentgyorgyi:"🍊 C-vitamin és sejtlégzés – szegedi paprikából.",
+    pasteur:"🧫 „A szerencse a felkészült elmének kedvez.” Ma te vagy az."
+  };
+  let lastName = "";
+  function nameEgg(n){
+    const k = (n||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z]/g,"");
+    const hit = Object.keys(NAMES).find(x=>k.includes(x));
+    if(!hit || k === lastName) return;
+    lastName = k;
+    if(!egg("name", 50, NAMES[hit])) toast(NAMES[hit], 3200);
+  }
+  // 7 koppintás a címre → DNS-eső
+  (function(){
+    let taps = [];
+    document.querySelector("#home h1").addEventListener("click", ()=>{
+      const now = Date.now(); taps = taps.filter(t=>now-t<4000); taps.push(now);
+      if(taps.length >= 7){ taps = []; dnaRain(7000); egg("hack", 77, "Hacker üzemmód: belehekkelted magad a genomba. 🧬"); }
+    });
+    let lt = [];
+    document.getElementById("lvltxt").addEventListener("click", ()=>{
+      const now = Date.now(); lt = lt.filter(t=>now-t<3000); lt.push(now);
+      if(lt.length >= 5){ lt = []; atpShower(); egg("atp", 30, "A mitokondrium túlórázik: ATP-töltés ⚡"); }
+    });
+    const K = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"]; let ki = 0;
+    addEventListener("keydown", e=>{
+      const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      ki = (k === K[ki]) ? ki+1 : (k === K[0] ? 1 : 0);
+      if(ki === K.length){ ki = 0; centrifuge(); egg("konami", 50, "Centrifugálva! 20 000 g – a sejtalkotók szépen rétegződnek. 🧪"); }
+    });
+  })();
+  // ZH-napi üdvözlet
+  (function(){
+    if(!zhActive()) return;
+    const key = "sejtbio-zhgreet-" + localDay();
+    try{ if(localStorage.getItem(key)) return; localStorage.setItem(key,"1"); }catch(e){}
+    const zhDay = localDay() === "2026-11-25";
+    setTimeout(()=>toast(zhDay ? "🍀 Ma van a ZH! Reggel: 15 perc a hibás kérdéseken, aztán menj és nyerd meg." : "📚 Holnap 12:00 a ZH. Ma: ismétlés + korán lefekvés.", 5200), 1400);
+  })();
+  function rareList(){
+    const el = document.getElementById("rarelist"); if(!el) return;
+    const r = S.rare || {};
+    el.textContent = "Ritka dropok: 🧬 " + (r.mutant||0) + " · ⚡ " + (r.boost||0) + " · 🟡 " + (r.gold||0) + " · 🌌 " + (r.legend||0) +
+      "  |  Titkok: " + (S.eggs||[]).length + "/10 megtalálva (nem mondom meg, hol)";
+  }
+  return {render:()=>{ render(); rareList(); }, rare, afterGood, afterAnswer, boostUI, nameEgg, egg, dnaRain};
+})();
+window.Extras = Extras;
+
 const lecBox = document.getElementById("lectures");
 function boot(){
   const allBtn = document.createElement("button");
@@ -1277,7 +1624,7 @@ function boot(){
   pendingChallenge = readChallenge();
   const ni = document.getElementById("nameinput");
   ni.value = S.name || "";
-  ni.addEventListener("input", ()=>{ S.name = ni.value.slice(0,14); save(); });
+  ni.addEventListener("input", ()=>{ S.name = ni.value.slice(0,14); save(); Extras.nameEgg(S.name); });
   if(!(S.name||"").trim()){ S.name = "Sejt" + (1000 + Math.floor(Math.random()*9000)); save(); }
   applyNight();
   accountUI();
@@ -1371,6 +1718,7 @@ function pick(f, n){
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } }
 
 function refresh(){
+  if(window.Extras) Extras.render();
   if(document.body.classList.contains("night")) Night.banner();
   const lv = levelOf(S.xp), into = S.xp % 500;
   document.getElementById("lvltxt").textContent = lv + ". szint";
@@ -1550,6 +1898,8 @@ function render(){
     if(ghostData) d.textContent = "👤 " + ghostData.n + ": " + ghostData.s + "/" + ghostData.t + "  ·  te: " + sOK;
     else if(roundMode === "boss") d.textContent = "⚔️ BOSS · " + (LEC[bossLec]||"") + " · dupla XP, magyarázat a végén";
     else if(roundMode === "daily") d.textContent = "📆 Napi kihívás · mindenkinél ugyanez a 10 kérdés";
+    else if(roundMode === "zh") d.textContent = "🎯 ZH-roham · " + pool.length + " célzott kérdés";
+    else if(roundMode === "zhsim") d.textContent = "📝 ZH-szimuláció · " + pool.length + " vegyes kérdés az egész anyagból";
     gb.appendChild(d);
   }
   const meta = document.getElementById("meta"); meta.innerHTML = "";
@@ -1563,6 +1913,9 @@ function render(){
   meta.appendChild(t2);
   if(q.f){ const t3=document.createElement("span"); t3.className="tag warn"; t3.textContent="! vitatott"; meta.appendChild(t3); }
 
+  curMutant = (roundMode === "normal" || roundMode === "zh" || roundMode === "zhsim") && Math.random() < 0.04;
+  if(curMutant){ const tm = document.createElement("span"); tm.className = "tag mut"; tm.textContent = "🧬 MUTÁNS · ×3 XP"; meta.appendChild(tm); }
+  document.getElementById("qtext").classList.toggle("mutant", curMutant);
   document.getElementById("qtext").textContent = q.q.replace(/\s*\(Jelöld.*?\)\s*$/,"");
   document.getElementById("qid").textContent = "#"+q.n;
   const r = S.q[q.n];
@@ -1616,6 +1969,9 @@ function answer(i){
       gained = 10 + speed + Math.min(10, sStreak - 1) * 2;
       if(r.run === MASTER){ gained += 25; sMaster++; }
       if(roundMode === "boss") gained *= 2;
+      const wasMut = curMutant, wasBoost = boostLeft > 0;
+      if(wasMut){ gained *= 3; Extras.rare("mutant"); }
+      if(wasBoost){ gained *= 2; boostLeft--; Extras.boostUI(); }
       if(isNight()){ nightLogToday(); gained = Math.round(gained * nightMult()); }
       const crit = Math.random() < (isNight() ? 0.14 : 0.08);
       if(crit){
@@ -1629,7 +1985,7 @@ function answer(i){
       S.xp += gained; sXP += gained;
       beep(true); buzz(18);
       const p = document.createElement("div");
-      p.className = "pop-xp"; p.textContent = "+" + gained + (isNight() ? " 🦉" : "");
+      p.className = "pop-xp"; p.textContent = "+" + gained + (isNight() ? " 🦉" : "") + (wasMut ? " 🧬" : "") + (wasBoost ? " ⚡" : "");
       document.getElementById("qcard").appendChild(p);
       setTimeout(()=>p.remove(), 1000);
       const c = document.getElementById("combo");
@@ -1639,6 +1995,7 @@ function answer(i){
         const qc = document.getElementById("qcard"); qc.classList.add("nglow"); setTimeout(()=>qc.classList.remove("nglow"), 650);
         if(sStreak && sStreak % 5 === 0) confetti();
       } else if(sStreak && sStreak % 10 === 0) confetti();
+      Extras.afterGood();
     } else {
       r.bad++; r.run = 0; sStreak = 0; sBad.push(q.n);
       beep(false); buzz([40,60,40]);
@@ -1646,6 +2003,7 @@ function answer(i){
       card.classList.add("shake"); setTimeout(()=>card.classList.remove("shake"), 340);
       document.getElementById("combo").textContent = "🔥0";
     }
+    Extras.afterAnswer(q, good);
     save();
   }
 
@@ -1753,6 +2111,11 @@ function finish(){
     S.daily = S.daily || {};
     S.daily[today()] = {o: sOK, t: scored};
     verdict("📆 Mai kihívás kész: " + sOK + "/" + scored + " – másold ki és küldd el a többieknek!");
+  }
+  if(roundMode === "zhsim"){
+    const first = !S.zhsim; S.zhsim = (S.zhsim||0) + 1;
+    if(first){ S.xp += 100; sXP += 100; }
+    verdict("📝 ZH-szimuláció kész: " + sOK + "/" + scored + " (" + pct + "%)" + (first ? " · első teljesítés +100 XP" : ""), pct >= 60 ? "ok" : undefined);
   }
   if(perfect) verdict("🎖️ Hibátlan kör! +100 XP bónusz", "ok");
 
