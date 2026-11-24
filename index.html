@@ -2272,11 +2272,27 @@ document.getElementById("retryBad").addEventListener("click", ()=>{
   startRound(sBad.map(n=>Q.find(x=>x.n===n)), "normal");
 });
 /* ---------- PWA ---------- */
-let swOK = false, promptEvt = null;
+let swOK = false, promptEvt = null, swRefreshed = false;
 if("serviceWorker" in navigator && location.protocol === "https:"){
-  navigator.serviceWorker.register("./sw.js")
-    .then(()=>{ swOK = true; diag(); })
+  navigator.serviceWorker.register("./sw.js", {updateViaCache: "none"})
+    .then(reg=>{
+      swOK = true; diag();
+      reg.update().catch(()=>{});                    // azonnali frissiteskereses, ne varjon a bongeszo sajat utemezesere
+      setInterval(()=>reg.update().catch(()=>{}), 60*1000);
+      reg.addEventListener("updatefound", ()=>{
+        const nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener("statechange", ()=>{
+          if(nw.state === "installed" && navigator.serviceWorker.controller) nw.postMessage("skipWaiting");
+        });
+      });
+    })
     .catch(e=>{ swOK = false; diag("SW hiba: " + e.message); });
+  navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+    if(swRefreshed) return;                           // ne froccsentsen vegtelen ujratoltest
+    swRefreshed = true;
+    location.reload();
+  });
 }
 window.addEventListener("beforeinstallprompt", e=>{
   promptEvt = e;                      // Chrome saját ajánlatát NEM tiltjuk le
