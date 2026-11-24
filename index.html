@@ -272,6 +272,19 @@ body.centri .wrap{animation:centri 2.3s ease-in-out;transform-origin:50% 40vh}
 @keyframes centri{0%{transform:rotate(0)}55%{transform:rotate(720deg) scale(.55);filter:blur(2px)}100%{transform:rotate(1080deg) scale(1)}}
 .ntoast{white-space:pre-line}
 
+
+.factback{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:95;display:none;align-items:center;justify-content:center;padding:18px}
+.factback.on{display:flex}
+.factpop{position:relative;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:18px;max-width:420px;width:100%;
+  padding:22px 20px 18px;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
+.factpop .fx{position:absolute;top:8px;right:10px;border:0;background:transparent;color:var(--muted);font-size:26px;line-height:1;cursor:pointer;padding:6px 10px}
+.factpop .fe{font-size:44px;line-height:1}
+.factpop h3{margin:8px 0 4px;font-size:17px}
+.factpop p{margin:0;font-size:14.5px;line-height:1.5;color:var(--fg);text-align:left}
+.factpop .frow{display:flex;gap:8px;margin-top:16px}
+body.night .factpop{background:rgba(16,18,31,.9);border-color:rgba(177,75,255,.35)}
+body.zh .factpop{background:var(--card);border-color:#c9a24a}
+
 /* kritikus találat */
 .crit{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
   font-size:30px;font-weight:900;color:var(--gold);text-shadow:0 0 18px var(--gold);
@@ -374,8 +387,24 @@ body.centri .wrap{animation:centri 2.3s ease-in-out;transform-origin:50% 40vh}
 <div id="nightfx" aria-hidden="true"><div class="aur a1"></div><div class="aur a2"></div><div class="aur a3"></div><canvas id="nightsky"></canvas><div class="moon"></div></div>
 <div class="ntoast" id="ntoast" role="status"></div>
 
+<div class="factback" id="factback" role="dialog" aria-modal="true" aria-labelledby="fact-t">
+  <div class="factpop">
+    <button class="fx" id="fact-x" aria-label="Bezárás">×</button>
+    <div class="fe" id="fact-e">🧬</div>
+    <h3 id="fact-t">Tudtad?</h3>
+    <p id="fact-b"></p>
+    <div class="frow">
+      <button class="bigbtn ghost" id="fact-next" style="flex:1;padding:11px;font-size:14px">Még egy 🔀</button>
+      <button class="bigbtn" id="fact-ok" style="flex:1;padding:11px;font-size:14px">Mehet tovább</button>
+    </div>
+  </div>
+</div>
+
 <div id="home" class="wrap">
-  <h1>Sejtbiológia gyakorló</h1>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 14px">
+    <h1 style="margin:0">Sejtbiológia gyakorló</h1>
+    <button class="xbtn" id="factbtn" title="Érdekesség" style="font-size:22px;flex:0 0 auto">💡</button>
+  </div>
 
   <div class="zhcard" id="zhcard">
     <div class="zhhead"><div class="zhseal">ZH</div><div><b id="zh-title">Zárthelyi</b><small id="zh-sub"></small></div></div>
@@ -1609,6 +1638,58 @@ const Extras = (function(){
 })();
 window.Extras = Extras;
 
+
+const FACTS = [
+  {e:"🧵", t:"Két méter egy mikronban", b:"Ha egyetlen sejtedből kigombolyítanád a DNS-t, kábé 2 méter hosszú fonalat kapnál – ez pedig egy néhány mikrométeres sejtmagba van összehajtogatva. Egy emberben az összes DNS-t egymás után fűzve kb. kétszer érnénk a Naptól a Plútóig és vissza."},
+  {e:"🔡", t:"3 milliárd betű, 20 ezer recept", b:"A teljes emberi genom kb. 3 milliárd bázispárból áll, de ebből mindössze 20–25 ezer gén kódol fehérjét. A DNS nagy része (becslések szerint 95–98%-a) nem fehérjét kódol – ez a sokat emlegetett „szemét DNS”, aminek egy részéről kiderült, hogy mégis van szabályozó szerepe."},
+  {e:"🧬", t:"99,5% egyformák vagyunk", b:"Bármelyik két ember DNS-e kb. 99,5%-ban azonos. A maradék fél százaléknyi eltérés felelős azért, hogy valaki magas vagy alacsony, milyen a szeme színe, vagy éppen mire hajlamos egészségileg."},
+  {e:"🦍", t:"98% közös a csimpánzzal", b:"Az ember és a csimpánz DNS-e kb. 98%-ban egyezik. A két faj közös őse pár millió évvel ezelőtt élt – a maradék 2% alatt rengeteg apró mutáció és átrendeződés lapul."},
+  {e:"🦠", t:"A génjeid egy része vírusból jött", b:"Az emberi genom kb. 8%-a régi, retrovírusokból származó szakaszokból áll, amik millió évekkel ezelőtt épültek be az őseink DNS-ébe, és azóta öröklődnek tovább – néhányuknak ma már saját funkciója van (pl. a méhlepény kialakulásában)."},
+  {e:"🩸", t:"A vörösvértestnek nincs DNS-e", b:"Az érett emberi vörösvértestekből kilökődik a sejtmag és vele a teljes DNS-állomány is – így több hely jut a hemoglobinnak, ami az oxigént szállítja. Ára van: a vörösvértest emiatt nem tud osztódni, kb. 120 nap után lecserélődik."},
+  {e:"⚡", t:"A mitokondrium egykor önálló baktérium volt", b:"Lynn Margulis endoszimbionta elmélete szerint a mitokondrium egy ősi, önálló baktérium volt, amit egy nagyobb sejt bekebelezett – de nem emésztette meg, hanem tartósan együtt él vele azóta. Erre utal, hogy a mitokondriumnak saját, kör alakú DNS-e és saját riboszómái vannak, akárcsak egy baktériumnak."},
+  {e:"👩‍👧", t:"A mitokondriumod anyai örökség", b:"A mitokondriális DNS szinte kizárólag anyai ágon öröklődik, mert a petesejt adja a megtermékenyített zigóta mitokondriumait. Ezért lehet mitokondriális DNS-sel anyai leszármazási vonalakat visszakövetni generációkon át."},
+  {e:"🏭", t:"Van sejt, amiben ezrével van erőmű", b:"Egy sejtben a feladatától függően 1-2 vagy akár több ezer mitokondrium is lehet. A sokat dolgozó sejtek – például a máj- vagy szívizomsejtek – energiaigénye miatt tartanak különösen sokat."},
+  {e:"🏗️", t:"A riboszóma saját magát is összerakja", b:"A riboszóma kb. 50 fehérjéből és több RNS-molekulából épül fel, mégis képes önmagát összeszerelni a megfelelő alkotóelemekből – nincs hozzá külön „szerelő” gép. Ezután ez a géppé állt szerkezet gyártja a sejt összes többi fehérjéjét."},
+  {e:"⏱️", t:"Egy aminosav kb. 0,1 másodperc", b:"A riboszóma kodononként halad végig az mRNS-en, és lépésenként kb. tizedmásodpercenként épít be egy új aminosavat a készülő fehérjébe – van, amikor meg is torpan egy pillanatra, mielőtt folytatná."},
+  {e:"🧪", t:"64 kódszó, 20 aminosav", b:"A genetikai kódban 64 lehetséges kodon (bázishármas) van, de csak 20 féle aminosavat kódolnak – ezért a legtöbb aminosavnak több kodonja is van. Ezt hívják a genetikai kód degenerált (redundáns) voltának, ami véd néhány mutáció hatása ellen."},
+  {e:"🔧", t:"Az antibiotikumok egy része a riboszómát állítja meg", b:"Sok antibiotikum (pl. a tetraciklinek) úgy öl baktériumot, hogy blokkolja a baktérium riboszómáját, leállítva a fehérjeszintézist. Az emberi riboszóma kicsit másképp épül fel, ezért (ideális esetben) nem bántja a mi sejtjeinket."},
+  {e:"🌀", t:"Az ATP-szintáz egy forgó motor", b:"Az ATP-szintáz nevű fehérjekomplex szó szerint forog, miközben ATP-t termel – percenként több ezerszer pörög körbe, mint egy parányi, molekuláris méretű turbina."},
+  {e:"🚶", t:"A kinezin gyalogol a sejtedben", b:"A kinezin és a dinein nevű motorfehérjék szó szerint „lépkednek” a mikrotubulusok mentén, és rakományt (pl. hólyagocskákat) szállítanak a sejten belül – egyik a sejt közepe felé, másik kifelé halad."},
+  {e:"🧱", t:"Az aktinváz folyton épül és bomlik", b:"A mikrofilamentumok (aktin) az egyik végükön folyamatosan nőnek, a másikon folyamatosan bomlanak – emiatt a sejtváz nem egy merev állvány, hanem egy percek alatt átépülő, dinamikus szerkezet."},
+  {e:"🕸️", t:"A sejten kívül is van váz", b:"Az extracelluláris mátrix nem csak „töltőanyag” a sejtek között: kollagénrostokból, elasztinból és más fehérjékből álló hálózat, ami mechanikai tartást ad a szöveteknek, és jelátviteli funkciói is vannak a sejtek felé."},
+  {e:"🔒", t:"A tight junction vízhatlanná teszi a hámot", b:"A szoros kapcsolatok (tight junction) úgy zárják össze a szomszédos hámsejteket, hogy még a víz és az ionok sem tudnak szabadon átjutni a sejtek közötti résen – emiatt lehet a bélhám szelektíven áteresztő."},
+  {e:"👶", t:"Minden sejted ugyanazt a DNS-t hordozza", b:"A bőrsejtedtől az idegsejtedig gyakorlatilag minden sejtedben ugyanaz a genom van – a különbség abban van, hogy melyik gént kapcsolják be vagy ki. Ezt hívjuk differenciált génexpressziónak."},
+  {e:"♻️", t:"A sejtjeid folyamatosan cserélődnek", b:"A bélhám sejtjei kb. 2-4 naponta, a bőr felső rétege kb. 2-4 hetente cserélődik teljesen újra. Vannak viszont sejtek (pl. a legtöbb idegsejt a szívben és az agyban), amik gyakorlatilag egy életen át megmaradnak."},
+  {e:"🧫", t:"Egy nő sejtjei 70 éve is osztódnak egy laborban", b:"Henrietta Lacks 1951-ben elhunyt rákos betegtől származó sejtjei (HeLa-sejtek) máig osztódnak laborokban szerte a világon – a sejtvonal halhatatlanná vált, mert a telomeráz enzim nem engedi lerövidülni a kromoszómavégeket osztódás közben."},
+  {e:"👟", t:"A telomer a kromoszóma cipőfűzővége", b:"A telomerek a kromoszómák végén lévő ismétlődő DNS-szakaszok, amik minden sejtosztódáskor egy kicsit rövidülnek. Ha elfogynak, a sejt leállítja az osztódást – ez a jelenség szerepet játszhat a sejtöregedésben."},
+  {e:"🔬", t:"Egy baktérium kétszer annyi ideje van itt", b:"A prokarióta (sejtmag nélküli) sejtek nagyjából kétszer olyan régóta léteznek a Földön, mint az eukarióta (sejtmaggal rendelkező) sejtek – és ma is messze ők a legnépesebb élőlénycsoport a bolygón."},
+  {e:"🔀", t:"A baktériumok kölcsönadják a génjeiket", b:"A horizontális géntranszfer során a baktériumok nem csak szülőtől utódnak, hanem egymás között, fajhatárokon átívelve is képesek géneket átadni – például így terjedhet gyorsan egy antibiotikum-rezisztencia gén egy baktériumpopulációban."},
+  {e:"🦠", t:"A vírusok nem igazán „élnek”", b:"A vírusoknak nincs saját anyagcseréjük és nem tudnak önállóan szaporodni – ehhez egy gazdasejt fehérjeszintetizáló gépezetét (pl. a riboszómáit) kell eltéríteniük. Emiatt a biológusok vitatkoznak azon, hogy egyáltalán élőlénynek számítanak-e."},
+  {e:"🧩", t:"Egy gén akár 2,4 millió bázis is lehet", b:"A legnagyobb ismert emberi gén, a dystrophin gén kb. 2,4 millió bázispárból áll – ehhez képest egy átlagos gén „csak” néhány tízezer bázispár hosszú."},
+  {e:"🌙", t:"A Barr-test egy kikapcsolt X-kromoszóma", b:"A nőknél az egyik X-kromoszóma a sejtek nagy részében inaktiválódik és összetömörödik (Barr-test) – ezért minden nő testében egy mozaik van: egyes sejtjeiben az apai, másokban az anyai X aktív."},
+  {e:"🧠", t:"Az idegsejtjeid nagy része veled született", b:"A legtöbb agyi idegsejted ugyanaz, mint születésedkor volt – ezek a sejtek alig vagy egyáltalán nem osztódnak tovább, ellentétben pl. a bőr- vagy bélhámsejtekkel, amik folyamatosan megújulnak."},
+  {e:"🔑", t:"Egy jelátviteli fehérje másodpercek alatt vált", b:"A sejtfelszíni receptorok (pl. hormonreceptorok) a ligandum megkötése után másodperceken belül elindítanak egy jelátviteli kaszkádot a sejten belül, ami akár a sejtmagig, a génexpresszió megváltoztatásáig is elérhet."},
+  {e:"🧷", t:"A hisztonok gombolyítják fel a DNS-t", b:"A DNS a hiszton nevű fehérjegombolyagok köré tekeredik fel (ez a nukleoszóma), ez a csomagolás teszi lehetővé, hogy a kétméteres DNS-fonal beférjen egy pár mikrométeres sejtmagba – és ez a csomagolás sűrűsége is szabályozza, mely gének aktívak éppen."}
+];
+const Facts = (function(){
+  let bag = [], lastIdx = -1;
+  function refill(){ bag = FACTS.map((_,i)=>i); shuffle(bag); if(bag[0]===lastIdx && bag.length>1){ [bag[0],bag[1]]=[bag[1],bag[0]]; } }
+  function draw(){ if(!bag.length) refill(); const i = bag.shift(); lastIdx = i; return FACTS[i]; }
+  function render(f){
+    document.getElementById("fact-e").textContent = f.e;
+    document.getElementById("fact-t").textContent = f.t;
+    document.getElementById("fact-b").textContent = f.b;
+  }
+  function open(){ render(draw()); document.getElementById("factback").classList.add("on"); }
+  function close(){ document.getElementById("factback").classList.remove("on"); }
+  document.getElementById("fact-x").addEventListener("click", close);
+  document.getElementById("fact-ok").addEventListener("click", close);
+  document.getElementById("fact-next").addEventListener("click", ()=>render(draw()));
+  document.getElementById("factback").addEventListener("click", e=>{ if(e.target.id==="factback") close(); });
+  document.getElementById("factbtn").addEventListener("click", open);
+  return {open, auto:function(p){ if(Math.random() < (p||0.4)) setTimeout(open, 900); }};
+})();
+
 const lecBox = document.getElementById("lectures");
 function boot(){
   const allBtn = document.createElement("button");
@@ -2161,6 +2242,7 @@ function finish(){
   if(loggedIn()) pushProfile();
   refresh(); show("result");
   if(pct >= 80 || fresh.length || dc === S.goal) setTimeout(confetti, 180);
+  Facts.auto(0.4);
 }
 document.getElementById("challenge").addEventListener("click", async ()=>{
   const scored = lastPool.filter(q=>q.c).length;
