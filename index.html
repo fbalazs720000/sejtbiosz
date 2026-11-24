@@ -96,8 +96,10 @@ h1{font-size:21px;line-height:1.25;margin:0 0 14px}
 .mbar{position:relative}
 .mbar i{display:block;height:100%;background:var(--ok);position:absolute;left:0;top:0}
 .mbar i.seen{background:var(--accent);opacity:.45}
+.mbar i.co{background:var(--ok);opacity:.5}
 .mnum{flex:0 0 88px;text-align:right;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .mnum b{color:var(--ok);font-weight:650}
+.mnum i.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 2px 0 5px;vertical-align:middle}
 .mlegend{font-size:11.5px;color:var(--muted);margin:-2px 0 10px}
 .done{color:var(--gold)}
 
@@ -149,6 +151,7 @@ body.night .xpbar{background:rgba(255,255,255,.07)}
 body.night .xpbar i{background:var(--ngrad);background-size:300% 100%;animation:nshift 4s linear infinite;box-shadow:0 0 14px rgba(48,242,166,.65)}
 body.night .mbar i{background:linear-gradient(90deg,#30f2a6,#2bd4ff);box-shadow:0 0 8px rgba(48,242,166,.6)}
 body.night .mbar i.seen{background:#b14bff;opacity:.5;box-shadow:none}
+body.night .mbar i.co{background:#30f2a6;opacity:.55;box-shadow:none}
 body.night .bigbtn:not(.ghost){background:linear-gradient(135deg,#8b2cff,#2bd4ff 130%);
   box-shadow:0 0 20px -2px rgba(139,44,255,.75);animation:npulse 3.2s ease-in-out infinite}
 @keyframes npulse{50%{box-shadow:0 0 32px 2px rgba(43,212,255,.7)}}
@@ -442,7 +445,7 @@ body.zh .factpop{background:var(--card);border-color:#c9a24a}
 
   <div class="panel">
     <h2>Elsajátítva <span id="mastertot" style="float:right;text-transform:none;letter-spacing:0"></span></h2>
-    <div class="mlegend">kék = már válaszoltál rá · zöld szám = elsajátítva (3 jó válasz egymás után)</div>
+    <div class="mlegend">kék = találkoztál vele · világoszöld = már volt jó válaszod rá · zöld szám = elsajátítva (3 jó válasz egymás után)</div>
     <div id="mastery"></div>
   </div>
 
@@ -465,6 +468,9 @@ body.zh .factpop{background:var(--card);border-color:#c9a24a}
       <button class="chip" data-len="10">10</button>
       <button class="chip" data-len="20" aria-pressed="true">20</button>
       <button class="chip" data-len="40">40</button>
+      <button class="chip" data-len="50">Félmaraton <small>· 50</small></button>
+      <button class="chip" data-len="100">Maraton <small>· 100</small></button>
+      <button class="chip" data-len="150">Ultra-Balaton <small>· 150</small></button>
       <button class="chip" data-len="0">összes</button>
     </div>
   </div>
@@ -1835,15 +1841,16 @@ function refresh(){
   Object.keys(LEC).forEach(l=>{
     const qs = Q.filter(q=>q.l==l), m = qs.filter(q=>mastered(q.n)).length;
     const a = qs.filter(q=>{ const r=S.q[q.n]; return r && (r.ok+r.bad)>0; }).length;
+    const co = qs.filter(q=>{ const r=S.q[q.n]; return r && r.ok>0; }).length;
     const row = document.createElement("div"); row.className = "mrow";
     const done = m===qs.length && qs.length;
     row.innerHTML = '<span'+(done?' class="done"':'')+'>'+(done?"✓ ":"")+LEC[l]+'</span>'+
-      '<span class="mbar"><i class="seen" style="width:'+(100*a/qs.length)+'%"></i><i style="width:'+(100*m/qs.length)+'%"></i></span>'+
-      '<span class="mnum">'+a+'/'+qs.length+' · <b>'+m+'</b></span>';
+      '<span class="mbar"><i class="seen" style="width:'+(100*a/qs.length)+'%"></i><i class="co" style="width:'+(100*co/qs.length)+'%"></i><i style="width:'+(100*m/qs.length)+'%"></i></span>'+
+      '<span class="mnum">'+a+'/'+qs.length+' · '+co+' · <b>'+m+'</b></span>';
     mv.appendChild(row);
   });
-  let seenTot = 0; for(const k in S.q) if((S.q[k].ok + S.q[k].bad) > 0) seenTot++;
-  document.getElementById("mastertot").textContent = seenTot + " látott · " + masterCount() + " kész / " + Q.length;
+  let seenTot = 0, coTot = 0; for(const k in S.q){ if((S.q[k].ok + S.q[k].bad) > 0) seenTot++; if(S.q[k].ok > 0) coTot++; }
+  document.getElementById("mastertot").textContent = seenTot + " látott · " + coTot + " helyes · " + masterCount() + " kész / " + Q.length;
 
   const bb = document.getElementById("badges"); bb.innerHTML = "";
   BADGES.forEach(b=>{
